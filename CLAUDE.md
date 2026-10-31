@@ -15,29 +15,40 @@ Built by team Sleep Deprived for Hacktoberfest 2026 Hack Day Sonipat, Problem 04
 and judging rules are in the organizers' PDFs, not in this repo. The relevant
 points are summarized under **Hackathon rules** below.
 
-## Status: only M0 exists
+## Status: M0 and M1 exist
 
-Implemented (merged in PR #1):
+Implemented, M0 (merged in PR #1):
 - npm workspaces `server/` (Express 5, ES modules) and `web/` (React 19 + Vite 8)
 - `GET /api/health`: Ollama connectivity and model availability
 - A dashboard page that shows that health status, and nothing else
 - The report contract (`docs/report-schema.md`) with `validateReport()`
 - CI, the PR template, LICENSE (MIT), README
 
-**Not implemented yet:** package retrieval, source resolution, archive
-extraction, diffing, security scanning, any model inference, an analysis API,
-a CLI, release monitoring, and real examples. Never describe these as working,
-in code comments, the README, UI copy or PR descriptions. UI text must not
-pretend a feature works. The current page explicitly says analysis is not
+Implemented, M1 (deterministic npm analysis; CLI only):
+- `npm run analyze -- name@1.2.3 [--json] [--out f] [--tarball f.tgz]`
+- npm registry metadata + tarball fetch with a `dist.integrity` check
+- Source resolution on GitHub: `gitHead`, then version tags, else unresolved;
+  the source `package.json` must name the same package; monorepo
+  `repository.directory` supported
+- Bounded in-memory tar.gz reading, SHA-256 inventory, file diff
+  (identical / modified / package-only / source-only), `package.json` diff
+- Report contract v0.2.0 output, real `examples/`
+- Every report is `verdict: "inconclusive"`, `riskScore: null`,
+  differences `unclassified`, `ai.status: "skipped"`: nothing judges them yet
+
+**Not implemented yet:** the build-artifact explainer, security scanning, risk
+scores, any model inference, an analysis API route, any analysis UI, release
+monitoring, PyPI, non-GitHub sources, verification of npm provenance
+attestations (presence is reported, never verified). Never describe these as
+working, in code comments, the README, UI copy or PR descriptions. UI text must
+not pretend a feature works. The current page explicitly says analysis is not
 available yet.
 
 Planned milestones (each one is its own PR):
-- M1: npm registry fetch with a `dist.integrity` check, source resolution
-  (`gitHead`, then a version tag, otherwise "unresolved"), in-memory archive
-  reading, SHA-256 inventory and diff, semantic `package.json` diff, CLI
 - M2: deterministic scanner rules, a capability differential (behavior present
   in the package but absent from the source), an evidence-based build-artifact
-  explainer, risk score
+  explainer, risk score. This also replaces `unclassified` and the null score,
+  so it must update the examples and `server/test/examples.test.js`
 - M3: analysis dashboard built against `docs/report.sample.json`
 - M4: Gemma, then DeepSeek, through local Ollama
 - M5: async job API, local `.tgz` upload (organizers evaluate with tampered
@@ -53,14 +64,24 @@ server/src/app.js            createApp({ ollamaBaseUrl, fetchImpl }); routes
 server/src/config.js         REQUIRED_MODELS, PORT/HOST/OLLAMA_BASE_URL, loopback check
 server/src/health.js         getHealth(): builds the /api/health payload
 server/src/ai/ollama.js      listInstalledModels(): GET /api/tags only
-server/src/report/schema.js  report enums + validateReport()
-server/test/*.test.js        node:test suites
+server/src/errors.js         InputError / FetchError / ArchiveError (stable `code`s)
+server/src/limits.js         archive, download and timeout caps (package vs source)
+server/src/net/safe-fetch.js host allowlist, manual redirects, size/time caps
+server/src/ecosystems/npm/   spec.js (name/version validation), registry.js (metadata, tarball, integrity)
+server/src/source/           repository.js (repo URL parsing), resolve.js (gitHead -> tag -> unresolved)
+server/src/archive/          tar.js (bounded tar.gz reader), inventory.js (SHA-256 inventory)
+server/src/compare/          diff.js (file diff), manifest.js (package.json diff)
+server/src/analyze.js        analyzeNpmPackage(): the pipeline -> { report, analysis }
+server/src/report/           schema.js (enums, validateReport), build.js, summary.js (text)
+server/src/cli.js            run(argv, io): the CLI; server/bin/audyssey.js is the entry
+server/test/*.test.js        node:test suites (every file in test/ is run as a test)
+server/test-support/         test helpers: fake-fetch, tar-builder (hostile archives), scenario
 web/src/App.jsx              status page (fetches /api/health)
 web/src/lib/health.js        describeHealth(): pure view-model, unit tested
 web/test/*.test.js           node:test suites for web/src/lib
 docs/report-schema.md        report contract v0.2.0 (source of truth)
 docs/report.sample.json      hand-written, fictional sample; not real output
-examples/                    reserved for REAL inputs/outputs (README only for now)
+examples/                    REAL tool output: debug@4.4.1, mitt@3.0.1, tampered-demo
 ```
 
 ## Commands
@@ -72,6 +93,7 @@ Requires Node.js >= 22.12. CI uses Node 24 (`.nvmrc`).
 | Install | `npm install` (CI uses `npm ci`) |
 | All tests | `npm test` (runs `node --test` in each workspace) |
 | Frontend build | `npm run build` |
+| Analyze a package | `npm run analyze -- name@1.2.3` (needs network; `--json`, `--out <file>`, `--tarball <file>`) |
 | API server | `npm run dev:server` serves `http://127.0.0.1:8787` with `--watch` (`npm start` runs it without) |
 | Dashboard | `npm run dev:web` serves `http://127.0.0.1:5173` and proxies `/api` to 8787 |
 
@@ -92,7 +114,10 @@ must pass in CI on every PR.
 - Any other `/api/*` route returns 404 `{ "error": "Not found" }`. Unhandled
   errors return 500 `{ "error": "Internal server error" }`, and internal
   details are never sent to clients.
-- No endpoint may accept a filesystem path or expose local files.
+- No endpoint may accept a filesystem path or expose local files. Analysis is
+  CLI-only for now: no route takes a package name, URL or path. The CLI may
+  read a `--tarball` path the user passes on their own machine; an HTTP API may
+  never do that.
 
 ## Report contract
 
@@ -100,7 +125,10 @@ must pass in CI on every PR.
 `server/src/report/schema.js`, and `validateReport(report)` returns a list of
 problems (an empty list means the report is valid). Changing the contract means
 updating the doc, `schema.js`, `report.sample.json` and the tests together, in
-their own PR. The key invariants, which `validateReport` enforces:
+their own PR (as was done for v0.2.0). The key invariants, which
+`validateReport` enforces:
+- `summary.riskScore` is `null` only with the `inconclusive` verdict. Never
+  invent a score.
 - `files[].status` is identical, modified, package-only or source-only, and
   each status matches which side has a hash and whether the hashes agree.
 - `summary.counts` and `summary.findingsBySeverity` match the arrays.
@@ -151,16 +179,19 @@ All package archives, source archives, manifests, file contents and model
 output are **untrusted input**.
 - Never execute, `require` or `import` audited code. Never run `npm install`,
   lifecycle scripts or build scripts against an audited package or repository.
-- Read archives as streams **in memory**. Do not extract them to disk. Normalize
-  paths, and reject absolute paths, `..` segments, and entries outside the
-  package root.
+- Read archives **in memory** under hard caps (`server/src/archive/tar.js`,
+  `limits.js`). Do not extract them to disk. Normalize paths, and reject
+  absolute paths, `..` segments, backslashes and entries outside the single
+  top-level directory. Reject duplicate paths, devices/FIFOs and data after the
+  end-of-archive marker. Do not skip a bad entry silently: throw `ArchiveError`.
 - Record symlinks and hardlinks as entries. Never follow or materialize them.
 - Enforce limits on entry count, per-file size, total uncompressed size,
   compression ratio (archive bombs) and path depth. Exceeding one is an
   analysis error, never a silent truncation.
 - Network access only to an allowlist (`registry.npmjs.org`,
-  `codeload.github.com`, `github.com`). Validate npm names and versions before
-  building URLs, and re-check hosts on redirects.
+  `codeload.github.com`, `github.com`), always through `safeFetchBuffer`.
+  Validate npm names and versions before building URLs (`spec.js`), treat
+  metadata-supplied URLs as untrusted, and re-check hosts on redirects.
 - Subprocesses (for example `git ls-remote`) only with fixed argument arrays,
   never through a shell.
 - Prompt injection: put untrusted text inside clearly delimited blocks, never
@@ -188,12 +219,17 @@ output are **untrusted input**.
 ## Testing expectations
 
 - Use `node:test` with `node:assert/strict`. There is no other test framework.
+  Keep helpers in `server/test-support/`: `node --test` runs every file under a
+  `test/` directory.
 - Tests must never contact Ollama, download model weights or need network
   access. Inject fake `fetch` responses; `server/test/health.test.js` shows
   the pattern, including asserting which URLs were requested.
-- Archive-security code needs tests with archives built inside the tests:
-  traversal, absolute paths, symlinks, hardlinks, oversized files, too many
-  entries, gzip bombs.
+- Archive-security code needs tests with archives built inside the tests
+  (`test-support/tar-builder.js`): traversal, absolute paths, symlinks,
+  hardlinks, oversized files, too many entries, gzip bombs.
+- `server/test/examples.test.js` keeps `examples/` contract-valid,
+  tool-generated and tied to the tarball committed beside it. Regenerate
+  examples with the tool; never edit them by hand.
 - Each scanner rule needs a positive and a negative fixture. AI handling needs
   tests for malformed output, invented IDs and injection text.
 

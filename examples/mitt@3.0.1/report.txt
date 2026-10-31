@@ -1,0 +1,31 @@
+Audyssey report for mitt@3.0.1 (npm, registry download)
+
+Integrity:  verified against the registry checksum (sha512)
+Source:     https://github.com/developit/mitt @ b240473b5707 (exact commit recorded by npm)
+            - Resolved the exact commit that npm recorded for this release (gitHead b240473b5707).
+            - The source package.json name matches the published package.
+            - The source package.json version matches the published version.
+
+Files:      3 identical, 0 modified, 7 package-only, 9 source-only
+  package-only  dist/mitt.js
+  package-only  dist/mitt.js.map
+  package-only  dist/mitt.mjs
+  package-only  dist/mitt.mjs.map
+  package-only  dist/mitt.umd.js
+  package-only  dist/mitt.umd.js.map
+  package-only  index.d.ts
+  source-only   .editorconfig
+  source-only   .eslintrc
+  source-only   .github/workflows/compressed-size.yml
+  source-only   .github/workflows/main.yml
+  source-only   .gitignore
+  source-only   src/index.ts
+  source-only   test/index_test.ts
+  source-only   test/test-types-compilation.ts
+  source-only   tsconfig.json
+
+package.json: 0 field(s) differ between the published package and the source
+Install-time scripts in the published package: none
+
+Verdict:    inconclusive
+Security assessment: not performed. This build compares files and metadata only. It does not judge whether a difference is expected or suspicious.

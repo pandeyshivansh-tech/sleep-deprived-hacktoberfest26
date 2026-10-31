@@ -20,37 +20,57 @@ This repository is being built milestone by milestone through pull requests.
 | Repository foundation, CI, report contract | Done (M0) |
 | API server with Ollama and model health check | Done (M0) |
 | Dashboard showing server and model status | Done (M0) |
-| Package retrieval, source resolution, safe extraction, file diff | Planned (M1) |
-| Deterministic security scanner and build-artifact explainer | Planned (M2) |
+| npm retrieval, integrity check, source resolution, safe in-memory archive reading, SHA-256 file comparison, `package.json` comparison, command-line tool, real examples | Done (M1) |
+| Build-artifact explainer, deterministic security scanner, risk score | Planned (M2) |
 | Gemma and DeepSeek analysis through local Ollama | Planned (M4) |
-| Full analysis dashboard, CLI and examples | Planned (M3–M6) |
+| Analysis dashboard, analysis API, local tarball upload in the UI | Planned (M3, M5) |
+| Release monitoring | Planned (M6) |
 
-The tool cannot analyze packages yet. This README describes only what exists,
-and each milestone PR updates it.
+This README describes only what exists, and each milestone PR updates it.
 
-## How it will work
+## What it does today
 
-1. Fetch the exact package version from the npm registry and verify the
-   tarball against the registry's integrity hash.
-2. Resolve the source snapshot: the exact commit from `gitHead` when available,
-   otherwise a matching version tag, and report the confidence of that match.
-3. Read both archives in memory without ever executing package code or running
-   install scripts.
-4. Hash every file (SHA-256) and classify it as identical, modified,
+The command-line tool compares an npm package with its source repository:
+
+1. Fetches the exact package version from the npm registry and verifies the
+   tarball against the registry's published checksum.
+2. Resolves the source snapshot on GitHub: the exact commit npm recorded
+   (`gitHead`) when available, otherwise a tag named after the version, and
+   reports how certain that match is. Monorepo subdirectories are supported.
+   The source `package.json` must name the same package. If no source can be
+   established, the result is `inconclusive`, never clean.
+3. Reads both archives in memory, without executing package code, running
+   install scripts or writing package contents to disk, and with limits on
+   size, entry count, depth and compression ratio.
+4. Hashes every file (SHA-256) and classifies it as identical, modified,
    package-only or source-only.
-5. Explain differences using evidence such as build configuration, entry points
-   and source maps, not a hard-coded allowlist.
-6. Run deterministic security checks: lifecycle scripts, credential and
-   environment access, network calls, obfuscation, dynamic execution, and
-   behaviors present in the package but absent from the source.
-7. Optionally ask two local models to interpret that evidence (see below).
+5. Compares `package.json` field by field and lists install-time scripts.
+6. Writes a deterministic JSON report ([contract](docs/report-schema.md)) and a
+   text summary. It can also analyze a local `.tgz` file, such as a tampered
+   copy.
 
-The report format is defined in [`docs/report-schema.md`](docs/report-schema.md).
+Only npm and GitHub-hosted sources are supported.
+
+**Not done yet:** Audyssey does not yet decide whether a difference is a normal
+build artifact or suspicious, scan code for risky behavior, assign a risk score,
+or use the AI models. Every report therefore has `verdict: "inconclusive"` and
+`riskScore: null`, and every difference is `unclassified`. See
+[`examples/`](examples) for real output.
+
+## Planned
+
+- Explain differences from evidence (build configuration, entry points, source
+  maps) rather than a hard-coded allowlist, and scan for risky behavior:
+  lifecycle scripts, credential and environment access, network calls,
+  obfuscation, dynamic execution, and behavior present in the package but
+  absent from the source.
+- Ask two local models to interpret that evidence (see below).
 
 ## AI models
 
-All inference runs locally through [Ollama](https://ollama.com). There is no
-cloud LLM provider and no cloud fallback.
+All inference will run locally through [Ollama](https://ollama.com). There is
+no cloud LLM provider and no cloud fallback. **The models are not called yet**
+(planned for M4); the health endpoint only checks that they are installed.
 
 | Model | Role |
 |---|---|
@@ -65,7 +85,7 @@ If Ollama is not running, deterministic analysis still works.
 
 - Node.js 22.12 or newer (CI uses Node 24, see `.nvmrc`)
 - npm 10 or newer
-- Optional, for AI features: Ollama with both models pulled
+- Optional, for the planned AI features: Ollama with both models pulled
 
 ```bash
 ollama pull gemma4:e4b
@@ -82,6 +102,35 @@ Install dependencies:
 ```bash
 npm install
 ```
+
+### Analyze a package
+
+```bash
+npm run analyze -- debug@4.4.1
+```
+
+The version must be exact (`name@1.2.3` or `@scope/name@1.2.3`). Needs network
+access to `registry.npmjs.org` and `codeload.github.com`; no Ollama and no API
+keys. Options:
+
+| Option | Effect |
+|---|---|
+| `--json` | Print the full JSON report instead of the text summary |
+| `--out <file>` | Also write the JSON report to a file |
+| `--tarball <file.tgz>` | Analyze a local tarball instead of downloading it. The registry metadata and the source are still looked up for the package it names. |
+
+Exit codes: `0` report produced, `1` analysis failed (for example a network
+error), `2` invalid input. A report can be `inconclusive` and still exit `0`.
+Analyze a local copy, for example the deliberately modified one in the examples:
+
+```bash
+npm run analyze -- --tarball examples/tampered-demo/debug-4.4.1-tampered.tgz
+```
+
+### Run the server and dashboard
+
+The server and dashboard currently show only service and model status. Analysis
+is available from the command line, not yet from the API or UI.
 
 Start the API server on http://127.0.0.1:8787:
 
@@ -126,17 +175,20 @@ npm test
 npm run build
 ```
 
-Tests use Node's built-in test runner and never contact Ollama or download
-models. CI (`.github/workflows/ci.yml`) runs install, tests and the frontend
-build on every pull request.
+Tests use Node's built-in test runner. They never touch the network, contact
+Ollama or download models: registry and GitHub responses are faked, and the
+hostile archives used in the security tests (path traversal, links, decompression
+bombs, truncated and corrupt tarballs) are built inside the tests. CI
+(`.github/workflows/ci.yml`) runs install, tests and the frontend build on every
+pull request.
 
 ## Repository layout
 
 ```
-server/     Express API and analysis core (ES modules)
+server/     Express API, analysis core and CLI (ES modules)
 web/        React + Vite dashboard
 docs/       Report contract and an illustrative sample report
-examples/   Real inputs and outputs produced by Audyssey
+examples/   Real inputs and outputs produced by Audyssey (see examples/README.md)
 .github/    CI workflow and pull request template
 ```
 
