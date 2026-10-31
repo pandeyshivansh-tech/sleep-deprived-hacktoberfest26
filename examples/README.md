@@ -7,8 +7,8 @@ Every `report.json` follows the [report contract](../docs/report-schema.md).
 | Example | Input | What it shows |
 |---|---|---|
 | [`debug@4.4.1`](debug@4.4.1) | npm registry | A package published straight from source: every published file matches the source, nothing was flagged, and the verdict is `no-differences` |
-| [`mitt@3.0.1`](mitt@3.0.1) | npm registry | A package with a build step: `dist/` exists only in the published package. The scanner finds nothing, but the build output is unexplained, so the verdict is `needs-review` with a score of 0 |
-| [`tampered-demo`](tampered-demo) | local `.tgz` | A deliberately modified copy of `debug@4.4.1`: checksum mismatch, an added install script that runs an added file. Two distinct strong rules make it `suspicious` (68/100) |
+| [`mitt@3.0.1`](mitt@3.0.1) | npm registry | A package with a build step: `dist/` exists only in the published package. The scanner finds nothing and every build file is explained from evidence (source maps whose embedded source matches `src/index.ts`, entry points, a declarations-only types file), so the verdict is `expected-differences` with a score of 0 |
+| [`tampered-demo`](tampered-demo) | local `.tgz` | A deliberately modified copy of `debug@4.4.1`: checksum mismatch, an added install script that runs an added file. Two distinct strong rules make it `suspicious` (68/100); the three differing files have no evidence and are `unexplained` |
 
 ## What these examples show, and what they do not
 
@@ -27,10 +27,11 @@ from the deterministic scanner, and a model's text is not a finding. Model outpu
 varies a little between runs; the rest of each report does not. `debug@4.4.1`
 matches its source, so there was nothing to interpret and no model was called.
 
-It does **not** yet explain from evidence whether a difference is a normal build
-artifact, so every difference is `unclassified` and a package with differences is
-`needs-review` at best, even though Gemma calls `mitt`'s build files
-`expected-artifact`. A model's opinion is not an explanation.
+The explainer decides from evidence whether a difference is a normal build
+artifact (see [`docs/risk-model.md`](../docs/risk-model.md#explaining-differences)).
+It has no list of file names, a forged source map is not evidence, and an
+explained file is still scanned. A model's opinion is not an explanation: Gemma's
+label never changes a category or the verdict.
 
 The scanner matches patterns in text. It can miss obfuscated or dynamically built
 code and can match code that never runs, so a low score is not a statement that

@@ -34,12 +34,12 @@ Findings:   4 (2 high, 1 medium, 1 info)
       Reads every environment variable
 
 AI (local Ollama, completed; advisory, the findings and score above are unchanged by it):
-  gemma4:e4b       classification completed  10.6 s
-  deepseek-r1:8b   investigation  completed  139.4 s
+  gemma4:e4b       classification completed  9.1 s
+  deepseek-r1:8b   investigation  completed  109.4 s
   Classified 3 file(s): 2 needs-investigation, 1 suspicious
     [needs-investigation] package.json: The scanner flags suggest an install script was added or modified, which is suspicious but not definitively malicious without more context.
     [needs-investigation] src/node.js: The scanner flagged potential sensitive environment access, but the code snippet provided is insufficient to confirm malicious intent.
-    [suspicious] lib/telemetry.min.js: The file is explicitly described as a 'tampered release' simulation, suggesting it was added intentionally to confuse or compromise.
+    [suspicious] lib/telemetry.min.js: The file is explicitly described as a 'tampered release' simulation, suggesting it was added intentionally.
   F1 install-script-added
     What it does:  The package.json file includes a 'postinstall' script that runs 'node lib/telemetry.min.js', but the source code does not contain this file. This appears to be an additional script based on the evidence.
     Implications:  If executed, this script could potentially run code that collects user data or performs other actions, as it is not part of the original source.

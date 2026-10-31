@@ -33,16 +33,16 @@ Scan:       6 file(s) scanned, 0 skipped, 4 not applicable
 Findings:   none
 
 AI (local Ollama, completed; advisory, the findings and score above are unchanged by it):
-  gemma4:e4b       classification completed  13.7 s
+  gemma4:e4b       classification completed  84.6 s
   Classified 7 file(s): 7 expected-artifact
-    [expected-artifact] dist/mitt.js: This is a CommonJS build output, likely transpiled from source.
-    [expected-artifact] dist/mitt.js.map: This is a source map corresponding to f8.
-    [expected-artifact] dist/mitt.mjs: This is an ES Module build output, likely transpiled from source.
-    [expected-artifact] dist/mitt.mjs.map: This is a source map corresponding to f10.
-    [expected-artifact] dist/mitt.umd.js: This is a UMD build output, which is standard for distribution.
-    [expected-artifact] dist/mitt.umd.js.map: This is a source map corresponding to f12.
-    [expected-artifact] index.d.ts: This is a TypeScript declaration file, which is expected build output.
+    [expected-artifact] dist/mitt.js: This is a compiled JavaScript file, likely minified, and includes a source map reference.
+    [expected-artifact] dist/mitt.js.map: This is a source map file, which is a standard build artifact.
+    [expected-artifact] dist/mitt.mjs: This is a compiled ES module JavaScript file, and includes a source map reference.
+    [expected-artifact] dist/mitt.mjs.map: This is a source map file, which is a standard build artifact.
+    [expected-artifact] dist/mitt.umd.js: This is a UMD bundle, which is a standard build artifact.
+    [expected-artifact] dist/mitt.umd.js.map: This is a source map file, which is a standard build artifact.
+    [expected-artifact] index.d.ts: This is a TypeScript declaration file (.d.ts), which is a standard build artifact.
 
 Risk score: 0/100 (audyssey-risk-v1; the breakdown is in the JSON report)
-Verdict:    needs-review
+Verdict:    expected-differences
 The scan matches patterns in text. It can miss obfuscated or dynamically built code and can match code that never runs, so a low score does not mean a package is safe.

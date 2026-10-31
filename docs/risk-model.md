@@ -131,7 +131,8 @@ obfuscated or hooks the network and is new in the package.
 | `suspicious` | **at least two distinct rules** produce high or critical findings, **and** the score is at least 60. One indicator, however severe, never produces it. |
 | `needs-review` | any finding of medium or above, or a score of at least 15 |
 | `inconclusive` | the source is unresolved and nothing above applies. Unresolved is never clean. |
-| `needs-review` | the source is resolved and there are modified or package-only files. Until the build-artifact explainer exists, differences cannot be called expected. |
+| `expected-differences` | the source is resolved, there are modified or package-only files, **every one of them is explained by the build-artifact explainer** (`generated-artifact` or `publish-normalization`), and nothing of low severity or above was found. |
+| `needs-review` | the source is resolved and there are modified or package-only files that are not all explained. |
 | `needs-review` | any finding of low severity |
 | `no-differences` | the source is resolved, every published file matches it, and nothing of low severity or above was found. Source-only files are not published, so they do not count. |
 
@@ -139,8 +140,35 @@ The contract validator enforces the guarantees behind this table (see
 [`report-schema.md`](report-schema.md)): `suspicious` needs two distinct strong
 rules, `no-differences` needs a resolved source and nothing of low severity or
 above, `inconclusive` never carries a finding of medium or above. So no report
-can claim more than its findings allow. `expected-differences` is not produced
-yet: it needs the explainer.
+can claim more than its findings allow. `expected-differences` additionally
+requires every difference to be explained (see [Explaining differences](#explaining-differences)).
+An explanation never lowers a score or hides a finding: the scanner reads every
+published file, explained or not, and a single finding of low severity or above
+rules `expected-differences` out.
+
+## Explaining differences
+
+The explainer (`server/src/explain/`) decides, from evidence in the package and
+the repository, whether a file that differs is a legitimate build artifact. It
+has no list of file names or extensions: each rule starts from file content or
+from a field the package declares.
+
+| Category | Evidence required |
+|---|---|
+| `generated-artifact` (source map) | The file's content is a version-3 source map whose embedded `sourcesContent` is byte-identical (SHA-256) to files in the repository: `high`. A map that lists repository paths but embeds no content is `medium`. |
+| `generated-artifact` (generated file) | The file ends with a `sourceMappingURL` reference to such a map in the package, the map's `file` field agrees, and the map describes every line of the file. `package.json` entry points are cited when they apply. |
+| `generated-artifact` (declarations) | The file is declared by `package.json` as its `types`, contains only declarations (nothing executable at the top level), and the repository has a source file with the same name: `medium`. |
+| `publish-normalization` | `package.json` differs only by **added** fields, none of which affects what is installed, run or loaded (scripts, bin, main, exports, dependencies and similar are never normalization). |
+| `not-published` | The repository file is not covered by an explicit, glob-free `files` list in `package.json`. |
+| `unexplained` | Anything else, including a map whose embedded source *differs* from the repository file (forged or stale), a file whose extra lines the map does not cover, and a file that is only an entry point. |
+
+Limits, stated plainly: build configuration beyond `package.json` (bundler or
+`tsconfig` files) is not read; a valid map shows that a file *claims* and
+plausibly matches a repository source, not that it equals the compiler's real
+output (a line-coverage check catches appended code, not edits within mapped
+lines); `.npmignore`/`.gitignore` and glob `files` entries are not interpreted.
+These limits are why the scanner still reads explained files and why an
+explanation can only help reach `expected-differences`, never override a finding.
 
 ## Measured on popular, benign packages
 

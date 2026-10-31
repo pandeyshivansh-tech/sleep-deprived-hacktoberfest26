@@ -53,16 +53,18 @@ export function scoreFindings(findings) {
 // more than the contract allows (see validateReport): `suspicious` needs two
 // distinct strong rules, and the "nothing to see" verdicts need a resolved source.
 //
-// Until the build-artifact explainer exists, differences between the package and
-// the source are unexplained, so they cannot be called expected.
-export function decideVerdict({ findings, riskScore, counts, sourceResolved }) {
+// Differences between the package and the source are "expected" only when the
+// explainer found evidence for every one of them (`unexplained` is how many it
+// did not; the default treats all of them as unexplained) and the scanner found
+// nothing at all of low severity or above. Scanning is independent of explaining.
+export function decideVerdict({ findings, riskScore, counts, sourceResolved, unexplained = counts.modified + counts.packageOnly }) {
   const strongest = findings.reduce((max, finding) => Math.max(max, rankOf(finding.severity)), -1);
   const strongRules = new Set(findings.filter((finding) => rankOf(finding.severity) >= rankOf('high')).map((finding) => finding.ruleId));
 
   if (strongRules.size >= 2 && riskScore >= THRESHOLDS.suspicious) return 'suspicious';
   if (strongest >= rankOf('medium') || riskScore >= THRESHOLDS.needsReview) return 'needs-review';
   if (!sourceResolved) return 'inconclusive';
-  if (counts.modified + counts.packageOnly > 0) return 'needs-review';
+  if (counts.modified + counts.packageOnly > 0) return unexplained === 0 && strongest < rankOf('low') ? 'expected-differences' : 'needs-review';
   if (strongest >= rankOf('low')) return 'needs-review';
   return 'no-differences';
 }

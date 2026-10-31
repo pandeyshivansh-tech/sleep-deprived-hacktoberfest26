@@ -16,10 +16,11 @@ node server/bin/audyssey.js analyze mitt@3.0.1 --ai --out "examples/mitt@3.0.1/r
 - 3 files are identical (`LICENSE`, `README.md`, `package.json`).
 - 7 files are `package-only`: `dist/mitt.js`, `dist/mitt.mjs`, `dist/mitt.umd.js`,
   their source maps, and `index.d.ts`. These are what a build step produces, so
-  they have no counterpart in the repository. Audyssey reports them as
-  `unclassified`: it does not yet decide whether they are legitimate build
-  output, and a generated file is never assumed to be safe.
-- 9 files are `source-only`: `src/index.ts`, the tests, and repository tooling.
+  they have no counterpart in the repository. The explainer
+  judges them from evidence (below); a generated file is still scanned and never
+  assumed to be safe.
+- 9 files are `source-only`: `src/index.ts`, the tests, and repository tooling. The
+  package's `files` list does not cover them, so they are `not-published`.
 
 - The scanner read the published code and found nothing to report. Risk score 0.
 - Run with `--ai`, **`gemma4:e4b` classified the 7 files that differ** (real
@@ -27,8 +28,14 @@ node server/bin/audyssey.js analyze mitt@3.0.1 --ai --out "examples/mitt@3.0.1/r
   and UMD builds, their source maps, and the type declaration). There were no
   findings, so `deepseek-r1:8b` had nothing to investigate and was not called.
   This is advisory: it does not change the score or the verdict.
-- The verdict is `needs-review`, not `no-differences`: the build output differs
-  from the source and nothing can explain it yet. Once the build-artifact
-  explainer exists this package is the case it is meant to settle, by telling
-  build output that traces back to `src/` from a file that has no business being
-  there. Until then Audyssey does not call differences "expected".
+- **Explained from evidence, not by name.** Each `dist/*.map` is a version-3 source
+  map whose embedded `sourcesContent` is byte-identical to `src/index.ts` in the
+  repository. Each built file ends with a `sourceMappingURL` to its map, which
+  describes all of its lines, and `package.json` declares it as an entry point
+  (`main`, `module`, `exports`, ...). `index.d.ts` is the declared `types` entry,
+  contains only declarations and has the same-named source `src/index.ts`
+  (medium confidence). `package.json` differs only by added publish metadata.
+- The verdict is `expected-differences`: every difference is explained, the
+  scanner found nothing, and the score is 0. It is not a statement that the
+  package is safe: a map shows the files claim this source, not that they equal
+  real compiler output.

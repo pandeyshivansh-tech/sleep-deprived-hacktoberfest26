@@ -38,7 +38,7 @@ test('every example has an input, a README and a report that satisfies the contr
 test('examples claim only what the product does today', async () => {
   for (const directory of await exampleDirectories()) {
     const report = JSON.parse(await read(directory, 'report.json'));
-    // The scanner ran, but nothing explains differences or calls a model yet.
+    // The scanner ran, and the explainer judged every difference (or the source was unresolved).
     assert.equal(report.scan.performed, true, directory);
     // The models are advisory and only run when there is something to interpret.
     // Whatever ran must be one of the two named models: never anything else.
@@ -51,9 +51,14 @@ test('examples claim only what the product does today', async () => {
     }
     assert.equal(report.ai.runs.length === 0, report.ai.status === 'skipped', directory);
     assert.ok(report.summary.scoring !== null && Number.isInteger(report.summary.riskScore), directory);
-    assert.ok(!['expected-differences'].includes(report.summary.verdict), `${directory}: no explainer exists, so differences cannot be "expected"`);
-    for (const file of report.files.filter((f) => f.status !== 'identical')) {
-      assert.equal(file.explanation.category, 'unclassified', `${directory}/${file.path}`);
+    const differing = report.files.filter((f) => f.status === 'modified' || f.status === 'package-only');
+    for (const file of differing) {
+      assert.notEqual(file.explanation.category, 'unclassified', `${directory}/${file.path}: the explainer judges every difference`);
+      assert.ok(file.explanation.evidence.length > 0, `${directory}/${file.path}: an explanation cites evidence`);
+    }
+    if (report.summary.verdict === 'expected-differences') {
+      assert.ok(differing.length > 0 && differing.every((f) => ['generated-artifact', 'publish-normalization'].includes(f.explanation.category)), directory);
+      assert.deepEqual(report.findings.filter((f) => f.severity !== 'info'), [], directory);
     }
   }
 });
@@ -84,12 +89,20 @@ test('each example demonstrates what its README says', async () => {
   assert.deepEqual(debug.findings.filter((f) => f.severity !== 'info'), [], 'a benign package has nothing to review');
 
   const mitt = verdicts['mitt@3.0.1'];
-  assert.equal(mitt.summary.verdict, 'needs-review', 'build output exists and nothing can explain it yet');
-  assert.equal(mitt.summary.riskScore, 0, 'but nothing in it matched a security rule');
+  assert.equal(mitt.summary.verdict, 'expected-differences', 'every build file is explained from evidence');
+  assert.equal(mitt.summary.riskScore, 0);
   assert.deepEqual(mitt.findings, []);
+  const mittFiles = Object.fromEntries(mitt.files.map((f) => [f.path, f.explanation]));
+  for (const path of ['dist/mitt.js', 'dist/mitt.mjs', 'dist/mitt.umd.js', 'dist/mitt.js.map', 'dist/mitt.mjs.map', 'dist/mitt.umd.js.map']) {
+    assert.equal(mittFiles[path].category, 'generated-artifact', path);
+    assert.match(mittFiles[path].evidence.join(' '), /byte-identical to repository files: src\/index\.ts/, path);
+  }
+  assert.equal(mittFiles['index.d.ts'].category, 'generated-artifact');
 
   const tampered = verdicts['tampered-demo'];
   assert.equal(tampered.summary.verdict, 'suspicious');
+  const tamperedFiles = Object.fromEntries(tampered.files.map((f) => [f.path, f.explanation.category]));
+  for (const path of ['lib/telemetry.min.js', 'package.json', 'src/node.js']) assert.equal(tamperedFiles[path], 'unexplained', `${path} has no evidence behind it`);
   assert.ok(tampered.summary.riskScore >= 60);
   const rules = tampered.findings.map((f) => f.ruleId);
   for (const rule of ['install-script-added', 'integrity-mismatch', 'install-script-runs-unsourced-file']) assert.ok(rules.includes(rule), rule);

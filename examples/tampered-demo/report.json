@@ -4,7 +4,7 @@
     "name": "audyssey",
     "version": "0.1.0"
   },
-  "generatedAt": "2026-10-31T22:50:09.882Z",
+  "generatedAt": "2026-10-31T23:07:44.298Z",
   "input": {
     "ecosystem": "npm",
     "name": "debug",
@@ -116,11 +116,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -136,11 +136,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -156,11 +156,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -222,11 +222,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -242,11 +242,11 @@
       },
       "source": null,
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "unexplained",
+        "confidence": "medium",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "No evidence ties this file to the repository: it is not a source map that matches repository source, references no such map, and is not a declarations-only types entry with matching source."
         ]
       },
       "findingIds": []
@@ -266,11 +266,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "unexplained",
+        "confidence": "medium",
         "evidence": [
           "The SHA-256 of the published file differs from the source file.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately.",
+          "package.json is not explained as publish metadata: it changes scripts.postinstall, which affects what is installed or run.",
           "package.json differs in 1 field(s): scripts.postinstall.",
           "The install-time script \"postinstall\" in the published package is not the same as in the source."
         ]
@@ -364,11 +364,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "unexplained",
+        "confidence": "medium",
         "evidence": [
           "The SHA-256 of the published file differs from the source file.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "No evidence ties this file to the repository: it is not a source map that matches repository source, references no such map, and is not a declarations-only types entry with matching source."
         ]
       },
       "findingIds": [
@@ -386,11 +386,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -406,11 +406,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -630,14 +630,14 @@
         "stage": "classification",
         "model": "gemma4:e4b",
         "digest": "eb2177adf7646d15faead94fdad6d3e170dc8015653418a3b7d5d52a6380be5b",
-        "durationMs": 10565,
+        "durationMs": 9111,
         "status": "completed"
       },
       {
         "stage": "investigation",
         "model": "deepseek-r1:8b",
         "digest": "6995872bfe4c521a67b32da386cd21d5c6e819b6e0d62f79f64ec83be99f5763",
-        "durationMs": 139431,
+        "durationMs": 109378,
         "status": "completed"
       }
     ],
@@ -655,7 +655,7 @@
       {
         "fileId": "f7",
         "label": "suspicious",
-        "rationale": "The file is explicitly described as a 'tampered release' simulation, suggesting it was added intentionally to confuse or compromise."
+        "rationale": "The file is explicitly described as a 'tampered release' simulation, suggesting it was added intentionally."
       }
     ],
     "investigations": [

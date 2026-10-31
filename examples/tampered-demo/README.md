@@ -51,6 +51,10 @@ node server/bin/audyssey.js analyze --tarball examples/tampered-demo/debug-4.4.1
   independent facts. `summary.scoring` in `report.json` shows how each finding
   contributes.
 
+- **No evidence explains the changes.** `lib/telemetry.min.js`, `package.json` (it
+  changes `scripts`) and `src/node.js` are `unexplained`; the other differences are
+  repository files `package.json`'s `files` list leaves out (`not-published`).
+  Nothing here can reach `expected-differences`.
 - **Local models (real output, `--ai`):** `gemma4:e4b` classified the 3 files that
   differ (`lib/telemetry.min.js` as suspicious, the other two as needing
   investigation) and `deepseek-r1:8b` explained the three strongest findings in

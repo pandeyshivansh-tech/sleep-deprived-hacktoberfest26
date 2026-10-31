@@ -44,9 +44,19 @@ Implemented, M2 (deterministic scanner; see `docs/risk-model.md`):
   table
 - Reports now have `scan.performed: true`, findings with evidence, a score and
   one of `no-differences`, `needs-review`, `suspicious`, `inconclusive`
-- Differences are still `unclassified`: no deterministic explainer exists yet. A
-  package that differs from its source is therefore `needs-review` at best, even
-  when nothing looks risky.
+- Differences are classified by the M2b explainer (below); without a resolved
+  source they stay `unclassified`.
+
+Implemented, M2b (evidence-based explainer, `server/src/explain/`):
+- Source maps are recognised by content (v3, `sources`, `mappings`); embedded
+  `sourcesContent` is compared by SHA-256 with the repository. Generated files
+  are explained via `sourceMappingURL` plus line coverage; `types` entries via
+  declarations-only content plus a same-stem source; `package.json` as
+  `publish-normalization` only for added, non-behavioral fields; `files` lists
+  for `not-published`. No file-name or extension lists. A forged map and an
+  entry point alone are `unexplained`. Explained files are still scanned, and
+  `expected-differences` needs every difference explained and no finding of low
+  severity or above. Build configuration beyond `package.json` is not read.
 
 Implemented, M4 (local models; see `docs/ai-analysis.md`):
 - `--ai` (CLI only, opt-in): `gemma4:e4b` classifies the files that differ, then
@@ -57,21 +67,15 @@ Implemented, M4 (local models; see `docs/ai-analysis.md`):
   to `ai.status: unavailable | partial | failed` with the deterministic report
   intact. Real inference was run and recorded in `examples/`.
 
-**Not implemented yet:** the deterministic build-artifact explainer (M2b: Problem
-04 requires it, and without it `expected-differences` is unreachable; an AI
-opinion on a file is not an explanation from evidence), an analysis API route, any analysis UI, release monitoring, PyPI, non-GitHub
+**Not implemented yet:** an analysis API route, any analysis UI, release monitoring, PyPI, non-GitHub
 sources, verification of npm provenance attestations (presence is reported, never
 verified). Never describe these as working, in code comments, the README, UI copy
-or PR descriptions, and never claim full Problem 04 coverage without the
-explainer. UI text must not pretend a feature works. The current page explicitly
+or PR descriptions. UI text must not pretend a feature works. The current page explicitly
 says analysis is not available yet. The scanner is heuristic: never describe a
 low score or an empty findings list as "safe".
 
 Planned milestones (each one is its own PR):
-- M2b: an evidence-based build-artifact explainer (entry points, build config,
-  source maps whose `sourcesContent` matches the repo; no hard-coded allowlist).
-  It replaces `unclassified`, makes `expected-differences` reachable, and must
-  update the examples and `server/test/examples.test.js`
+- M2b (done): the evidence-based build-artifact explainer above
 - M3: analysis dashboard built against `docs/report.sample.json`
 - M5: async job API, local `.tgz` upload (organizers evaluate with tampered
   copies)
