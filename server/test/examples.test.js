@@ -40,6 +40,8 @@ test('examples claim only what the product does today', async () => {
     const report = JSON.parse(await read(directory, 'report.json'));
     assert.equal(report.summary.verdict, 'inconclusive', directory);
     assert.equal(report.summary.riskScore, null, directory);
+    assert.equal(report.summary.scoring, null, directory);
+    assert.equal(report.scan.performed, false, `${directory} must not claim a scan that did not run`);
     assert.equal(report.ai.status, 'skipped', directory);
     assert.deepEqual(report.ai.runs, [], directory);
     assert.deepEqual(report.findings, [], directory);

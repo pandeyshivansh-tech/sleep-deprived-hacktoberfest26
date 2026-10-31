@@ -112,12 +112,25 @@ export function buildReport({
       // the verdict is always "inconclusive".
       verdict: 'inconclusive',
       riskScore: null,
+      scoring: null,
       counts,
       findingsBySeverity: Object.fromEntries(SEVERITIES.map((severity) => [severity, 0])),
     },
     files,
     findings: [],
     manifest,
+    // The scanner does not exist yet: say so explicitly rather than leave the
+    // reader to infer "clean" from an empty findings list.
+    scan: {
+      performed: false,
+      rulesVersion: null,
+      rules: [],
+      filesScanned: 0,
+      filesNotApplicable: 0,
+      filesSkipped: [],
+      filesSkippedCount: 0,
+      capabilityDifferential: { available: false, basis: null },
+    },
     ai: { status: 'skipped', runs: [], classifications: [], investigations: [] },
     errors,
   };

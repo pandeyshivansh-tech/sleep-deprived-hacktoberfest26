@@ -1,10 +1,10 @@
 {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.3.0",
   "tool": {
     "name": "audyssey",
     "version": "0.1.0"
   },
-  "generatedAt": "2026-10-31T21:21:57.317Z",
+  "generatedAt": "2026-10-31T21:50:57.526Z",
   "input": {
     "ecosystem": "npm",
     "name": "debug",
@@ -47,6 +47,7 @@
   "summary": {
     "verdict": "inconclusive",
     "riskScore": null,
+    "scoring": null,
     "counts": {
       "identical": 7,
       "modified": 0,
@@ -352,6 +353,19 @@
     "installScripts": {
       "package": {},
       "source": {}
+    }
+  },
+  "scan": {
+    "performed": false,
+    "rulesVersion": null,
+    "rules": [],
+    "filesScanned": 0,
+    "filesNotApplicable": 0,
+    "filesSkipped": [],
+    "filesSkippedCount": 0,
+    "capabilityDifferential": {
+      "available": false,
+      "basis": null
     }
   },
   "ai": {

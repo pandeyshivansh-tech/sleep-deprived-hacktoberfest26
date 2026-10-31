@@ -61,6 +61,8 @@ test('makes no security or classification judgement it cannot back', async () =>
   const { report } = await run(legitimate());
   assert.equal(report.summary.verdict, 'inconclusive');
   assert.equal(report.summary.riskScore, null);
+  assert.equal(report.summary.scoring, null);
+  assert.equal(report.scan.performed, false, 'the report says outright that nothing was scanned');
   assert.deepEqual(report.findings, []);
   assert.deepEqual(report.ai, { status: 'skipped', runs: [], classifications: [], investigations: [] });
   for (const file of report.files.filter((f) => f.status !== 'identical')) {
