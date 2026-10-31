@@ -1,6 +1,6 @@
 {
   "$comment": "Hand-written illustrative sample of the Audyssey report contract (docs/report-schema.md). It was NOT produced by Audyssey, and the package, repository, hashes and model outputs are fictional.",
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "tool": { "name": "audyssey", "version": "0.1.0" },
   "generatedAt": "2026-11-01T00:00:00.000Z",
   "input": { "ecosystem": "npm", "name": "example-pkg", "version": "1.2.0", "source": "registry" },
@@ -40,8 +40,8 @@
       "id": "f1",
       "path": "README.md",
       "status": "identical",
-      "package": { "sha256": "1111111111111111111111111111111111111111111111111111111111111111", "size": 2048 },
-      "source": { "sha256": "1111111111111111111111111111111111111111111111111111111111111111", "size": 2048 },
+      "package": { "sha256": "1111111111111111111111111111111111111111111111111111111111111111", "size": 2048, "type": "file" },
+      "source": { "sha256": "1111111111111111111111111111111111111111111111111111111111111111", "size": 2048, "type": "file" },
       "explanation": { "category": "identical", "confidence": "high", "evidence": ["SHA-256 hashes match."] },
       "findingIds": []
     },
@@ -49,8 +49,8 @@
       "id": "f2",
       "path": "package.json",
       "status": "modified",
-      "package": { "sha256": "2222222222222222222222222222222222222222222222222222222222222222", "size": 1310 },
-      "source": { "sha256": "3333333333333333333333333333333333333333333333333333333333333333", "size": 1190 },
+      "package": { "sha256": "2222222222222222222222222222222222222222222222222222222222222222", "size": 1310, "type": "file" },
+      "source": { "sha256": "3333333333333333333333333333333333333333333333333333333333333333", "size": 1190, "type": "file" },
       "explanation": { "category": "unexplained", "confidence": "high", "evidence": ["scripts.postinstall exists in the package but not in the source package.json."] },
       "findingIds": ["F1"]
     },
@@ -58,7 +58,7 @@
       "id": "f3",
       "path": "dist/index.js",
       "status": "package-only",
-      "package": { "sha256": "4444444444444444444444444444444444444444444444444444444444444444", "size": 15872 },
+      "package": { "sha256": "4444444444444444444444444444444444444444444444444444444444444444", "size": 15872, "type": "file" },
       "source": null,
       "explanation": {
         "category": "generated-artifact",
@@ -74,7 +74,7 @@
       "id": "f4",
       "path": "dist/index.js.map",
       "status": "package-only",
-      "package": { "sha256": "5555555555555555555555555555555555555555555555555555555555555555", "size": 21504 },
+      "package": { "sha256": "5555555555555555555555555555555555555555555555555555555555555555", "size": 21504, "type": "file" },
       "source": null,
       "explanation": { "category": "generated-artifact", "confidence": "high", "evidence": ["Source map whose sources resolve to repository files."] },
       "findingIds": []
@@ -83,7 +83,7 @@
       "id": "f5",
       "path": "lib/telemetry.min.js",
       "status": "package-only",
-      "package": { "sha256": "6666666666666666666666666666666666666666666666666666666666666666", "size": 7479 },
+      "package": { "sha256": "6666666666666666666666666666666666666666666666666666666666666666", "size": 7479, "type": "file" },
       "source": null,
       "explanation": { "category": "unexplained", "confidence": "high", "evidence": ["No repository file, build configuration or source map accounts for this file."] },
       "findingIds": ["F2", "F3"]
@@ -93,7 +93,7 @@
       "path": "src/index.ts",
       "status": "source-only",
       "package": null,
-      "source": { "sha256": "7777777777777777777777777777777777777777777777777777777777777777", "size": 9120 },
+      "source": { "sha256": "7777777777777777777777777777777777777777777777777777777777777777", "size": 9120, "type": "file" },
       "explanation": { "category": "not-published", "confidence": "high", "evidence": ["package.json files field includes only dist/ and lib/."] },
       "findingIds": []
     }
@@ -136,6 +136,14 @@
       "evidence": [{ "path": "lib/telemetry.min.js", "line": 1, "snippet": "var _0x3f1a=['\\x68\\x74\\x74\\x70\\x73'" }]
     }
   ],
+  "manifest": {
+    "compared": true,
+    "reason": null,
+    "changes": [
+      { "field": "scripts.postinstall", "change": "added", "packageValue": "node lib/telemetry.min.js", "sourceValue": null }
+    ],
+    "installScripts": { "package": { "postinstall": "node lib/telemetry.min.js" }, "source": {} }
+  },
   "ai": {
     "status": "completed",
     "runs": [

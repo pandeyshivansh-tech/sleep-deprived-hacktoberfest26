@@ -46,6 +46,59 @@ test('rejects inconsistent hashes and statuses', async () => {
   assert.ok(errors.some((e) => e.includes('files[1].status must be one of')));
 });
 
+test('a null riskScore is valid only for an inconclusive verdict', async () => {
+  const report = await loadSample();
+  report.summary.riskScore = null;
+  assert.ok(validateReport(report).some((e) => e.includes('may be null only when summary.verdict is inconclusive')));
+
+  report.summary.verdict = 'inconclusive';
+  assert.deepEqual(validateReport(report), []);
+});
+
+test('still rejects out-of-range or non-integer risk scores', async () => {
+  for (const bad of [-1, 101, 4.5, '80', undefined]) {
+    const report = await loadSample();
+    report.summary.riskScore = bad;
+    assert.ok(validateReport(report).some((e) => e.includes('riskScore must be null or an integer')), String(bad));
+  }
+});
+
+test('accepts the unclassified explanation category', async () => {
+  const report = await loadSample();
+  report.files[1].explanation.category = 'unclassified';
+  assert.deepEqual(validateReport(report), []);
+});
+
+test('validates the manifest section', async () => {
+  const report = await loadSample();
+  report.manifest.compared = 'yes';
+  report.manifest.changes[0].change = 'renamed';
+  report.manifest.changes.push({ field: '', change: 'added' });
+  report.manifest.installScripts.source = null;
+  const errors = validateReport(report);
+  assert.ok(errors.some((e) => e.includes('manifest.compared must be a boolean')));
+  assert.ok(errors.some((e) => e.includes('manifest.changes[0].change must be one of added, removed, changed')));
+  assert.ok(errors.some((e) => e.includes('manifest.changes[1].field must be a non-empty string')));
+  assert.ok(errors.some((e) => e.includes('manifest.installScripts.source must be an object')));
+
+  delete report.manifest;
+  assert.ok(validateReport(report).includes('manifest must be an object'));
+});
+
+test('validates the optional file entry type', async () => {
+  const report = await loadSample();
+  report.files[0].package.type = 'symlink';
+  assert.deepEqual(validateReport(report), []);
+  report.files[0].package.type = 'socket';
+  assert.ok(validateReport(report).some((e) => e.includes('files[0].package.type must be one of file, symlink, hardlink')));
+});
+
+test('rejects a report written for a different schema version', async () => {
+  const report = await loadSample();
+  report.schemaVersion = '0.1.0';
+  assert.ok(validateReport(report).some((e) => e.startsWith('schemaVersion must be 0.2.0')));
+});
+
 test('rejects non-object input', () => {
   assert.deepEqual(validateReport(null), ['report must be an object']);
 });

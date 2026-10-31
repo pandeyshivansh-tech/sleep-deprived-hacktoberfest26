@@ -1,4 +1,4 @@
-# Audyssey report contract (v0.1.0)
+# Audyssey report contract (v0.2.0)
 
 This document defines the JSON report that the analysis pipeline, the API, the
 CLI and the dashboard share. The team builds against this contract in
@@ -28,7 +28,7 @@ The enumerations below are also exported from
 
 | Field | Type | Description |
 |---|---|---|
-| `schemaVersion` | string | `"0.1.0"` |
+| `schemaVersion` | string | `"0.2.0"` |
 | `tool` | `{ name, version }` | Producer of the report |
 | `generatedAt` | ISO-8601 string | Generation time |
 | `input` | object | What was requested (see below) |
@@ -36,6 +36,7 @@ The enumerations below are also exported from
 | `source` | object | Resolved source snapshot and how confident we are in it |
 | `summary` | object | Deterministic verdict, score and counts |
 | `files` | array | One entry per path present in the package, the source, or both |
+| `manifest` | object | Semantic comparison of the package and source `package.json` |
 | `findings` | array | Deterministic security findings |
 | `ai` | object | Model runs and their advisory output |
 | `errors` | array of `{ stage, message }` | Non-fatal problems encountered during analysis |
@@ -73,7 +74,9 @@ The enumerations below are also exported from
 
 - `verdict`: `no-differences`, `expected-differences`, `needs-review`,
   `suspicious` or `inconclusive`
-- `riskScore`: integer from 0 to 100
+- `riskScore`: integer from 0 to 100, or `null` when no security assessment was
+  performed. `null` is only valid together with the `inconclusive` verdict, so a
+  score is never invented.
 - `counts`: `{ identical, modified, packageOnly, sourceOnly }`, which must match
   `files`
 - `findingsBySeverity`: `{ info, low, medium, high, critical }`, which must
@@ -86,13 +89,25 @@ The enumerations below are also exported from
 | `id` | Unique ID (`f1`, `f2`, …) |
 | `path` | Path relative to the package root |
 | `status` | `identical`, `modified`, `package-only` or `source-only` |
-| `package` / `source` | `{ sha256, size }`, or `null` when absent on that side |
+| `package` / `source` | `{ sha256, size, type }`, or `null` when absent on that side. `type` is `file`, `symlink` or `hardlink` (optional). For links, `sha256` hashes the link target text and `size` is its length. |
 | `explanation` | `{ category, confidence, evidence[] }` |
 | `findingIds` | IDs of findings that concern this file |
 
 `explanation.category` is one of `identical`, `generated-artifact`,
-`publish-normalization`, `not-published` or `unexplained`. `confidence` is
+`publish-normalization`, `not-published`, `unexplained` or `unclassified`.
+`unclassified` means the difference is reported by hash only: no explainer or
+scanner has judged it, so it is neither expected nor suspicious. `unexplained`
+is a judgement that evidence was looked for and not found. `confidence` is
 `high`, `medium` or `low`.
+
+### `manifest`
+
+| Field | Description |
+|---|---|
+| `compared` | `true` when both `package.json` files were read and compared |
+| `reason` | Why the comparison was not made (`null` when `compared` is `true`) |
+| `changes` | `{ field, change, packageValue, sourceValue }` entries, sorted by `field`. `field` is a dotted path (for example `scripts.postinstall`); `change` is `added` (absent from the source), `removed` (absent from the package) or `changed`. The absent side's value is `null`; long values are truncated. |
+| `installScripts` | `{ package, source }`: the install-time scripts (`preinstall`, `install`, `postinstall`) defined on each side, as name to command |
 
 ### `findings[]`
 
