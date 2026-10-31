@@ -21,6 +21,11 @@ node server/bin/audyssey.js analyze debug@4.4.1 --out "examples/debug@4.4.1/repo
   `test.node.js`) are repository tooling and tests that are not published.
 - `package.json` is identical, so `manifest.changes` is empty, and the package
   defines no install-time scripts.
-
-The verdict is still `inconclusive` with a `null` risk score: this build
-compares, it does not assess risk.
+- The scanner read 6 files and reported one finding, at `info` severity:
+  `src/node.js` lists the environment (`Object.keys(process.env)`) to read the
+  `DEBUG_*` options. The source has the same code, so it is listed with no
+  severity and no points.
+- Risk score 0, verdict `no-differences`: every published file matches the
+  source, and nothing of low severity or above was found. That describes this
+  comparison and this set of patterns; it is not a guarantee that the code is
+  safe.

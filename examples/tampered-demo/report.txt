@@ -19,7 +19,20 @@ Files:      5 identical, 2 modified, 1 package-only, 6 source-only
 
 package.json: 1 field(s) differ between the published package and the source
 Install-time scripts in the published package: postinstall
-Problem [integrity]: The tarball does not match the checksum the npm registry publishes for this version.
 
-Verdict:    inconclusive
-Security assessment: not performed. This build compares files and metadata only. It does not judge whether a difference is expected or suspicious.
+Scan:       7 file(s) scanned, 0 skipped, 1 not applicable
+            - comparison with the source: Behavior in the package was compared with 7 code file(s) of the resolved source snapshot; 0 test or tooling file(s) were not counted.
+
+Findings:   4 (2 high, 1 medium, 1 info)
+  [high] install-script-added package.json:32
+      Adds a "postinstall" script that the source does not have
+  [high] integrity-mismatch package
+      The supplied tarball is not the published release
+  [medium] install-script-runs-unsourced-file package.json:32
+      The "postinstall" script runs a file that the source does not have
+  [info] sensitive-env-access src/node.js:124
+      Reads every environment variable
+
+Risk score: 68/100 (audyssey-risk-v1; the breakdown is in the JSON report)
+Verdict:    suspicious
+The scan matches patterns in text. It can miss obfuscated or dynamically built code and can match code that never runs, so a low score does not mean a package is safe.

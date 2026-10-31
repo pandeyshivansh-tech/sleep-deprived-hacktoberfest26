@@ -21,7 +21,8 @@ This repository is being built milestone by milestone through pull requests.
 | API server with Ollama and model health check | Done (M0) |
 | Dashboard showing server and model status | Done (M0) |
 | npm retrieval, integrity check, source resolution, safe in-memory archive reading, SHA-256 file comparison, `package.json` comparison, command-line tool, real examples | Done (M1) |
-| Build-artifact explainer, deterministic security scanner, risk score | Planned (M2) |
+| Deterministic security scanner, capability differential, documented risk score and verdict | Done (M2) |
+| Build-artifact explainer (explaining why differences exist) | Planned (M2b), required by Problem 04 |
 | Gemma and DeepSeek analysis through local Ollama | Planned (M4) |
 | Analysis dashboard, analysis API, local tarball upload in the UI | Planned (M3, M5) |
 | Release monitoring | Planned (M6) |
@@ -38,33 +39,56 @@ The command-line tool compares an npm package with its source repository:
    (`gitHead`) when available, otherwise a tag named after the version, and
    reports how certain that match is. Monorepo subdirectories are supported.
    The source `package.json` must name the same package. If no source can be
-   established, the result is `inconclusive`, never clean.
+   established, the result is `inconclusive` (or `needs-review` if the scan
+   found something), never clean.
 3. Reads both archives in memory, without executing package code, running
    install scripts or writing package contents to disk, and with limits on
    size, entry count, depth and compression ratio.
 4. Hashes every file (SHA-256) and classifies it as identical, modified,
    package-only or source-only.
 5. Compares `package.json` field by field and lists install-time scripts.
-6. Writes a deterministic JSON report ([contract](docs/report-schema.md)) and a
+6. **Scans the published files for risky patterns**, deterministically and
+   without executing anything: install scripts (and the files they run),
+   dynamic code execution, decoded-then-executed payloads, process execution,
+   credential and environment access combined with network use, obfuscation,
+   hooks on browser network functions near wallet code, hard-coded endpoints,
+   unexpected executables, links that leave the package, text aimed at AI
+   models, and a checksum or identity mismatch. Every finding carries evidence
+   (file, line, column, snippet).
+7. Compares what the package does with what the **source** shows (the
+   capability differential): behavior the source already has is listed without
+   severity, and a dangerous variant (a downloading command, a decoded payload)
+   is never excused by a harmless form in the source.
+8. Scores the findings with a documented model and chooses a verdict
+   (`no-differences`, `needs-review`, `suspicious`, `inconclusive`). A single
+   indicator can never make a package `suspicious`, and an unresolved source is
+   never clean. The score comes with a per-finding breakdown so it can be
+   recomputed. See [`docs/risk-model.md`](docs/risk-model.md).
+9. Writes a deterministic JSON report ([contract](docs/report-schema.md)) and a
    text summary. It can also analyze a local `.tgz` file, such as a tampered
    copy.
 
 Only npm and GitHub-hosted sources are supported.
 
-**Not done yet:** Audyssey does not yet decide whether a difference is a normal
-build artifact or suspicious, scan code for risky behavior, assign a risk score,
-or use the AI models. Every report therefore has `verdict: "inconclusive"` and
-`riskScore: null`, and every difference is `unclassified`. See
+**The scanner matches patterns in text.** It can miss obfuscated or dynamically
+built code and files over its size limit, and it can match code that never
+runs, so a low score is never a statement that a package is safe. On a corpus of
+24 popular packages it reported no high or critical finding
+([details](docs/risk-model.md)).
+
+**Not done yet:** Audyssey does not yet explain *why* a difference exists (is
+this file a normal build artifact?), so every difference is `unclassified` and a
+package that differs from its source is `needs-review` at best, even when
+nothing in it looks risky. It does not use the AI models yet. See
 [`examples/`](examples) for real output.
 
 ## Planned
 
-- Explain differences from evidence (build configuration, entry points, source
-  maps) rather than a hard-coded allowlist, and scan for risky behavior:
-  lifecycle scripts, credential and environment access, network calls,
-  obfuscation, dynamic execution, and behavior present in the package but
-  absent from the source.
-- Ask two local models to interpret that evidence (see below).
+- **Explain differences from evidence** (build configuration, entry points,
+  source maps) rather than a hard-coded allowlist. Problem 04 requires this, and
+  until it exists a clean built package cannot reach `expected-differences`.
+- Ask two local models to interpret the evidence (see below).
+- Release monitoring, an analysis API and an analysis dashboard.
 
 ## AI models
 

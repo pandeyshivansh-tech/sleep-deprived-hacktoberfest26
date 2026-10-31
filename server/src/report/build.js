@@ -1,7 +1,9 @@
+import { SCAN_LIMITS } from '../limits.js';
+import { decideVerdict, scoreFindings } from '../scan/risk.js';
 import { VERSION } from '../version.js';
 import { SCHEMA_VERSION, SEVERITIES, validateReport } from './schema.js';
 
-const NOT_JUDGED = 'No build-artifact analysis or security scan has judged this difference.';
+const NOT_JUDGED = 'No build-artifact analysis has judged this difference. The security scanner reports its findings separately.';
 const MAX_LISTED_FIELDS = 10;
 
 const side = (record) => (record ? { sha256: record.sha256, size: record.size, type: record.type } : null);
@@ -61,6 +63,31 @@ function buildFiles({ comparison, sourceResolved, manifest }) {
   });
 }
 
+const UNSCANNED = Object.freeze({
+  performed: false,
+  rulesVersion: null,
+  rules: [],
+  filesScanned: 0,
+  filesNotApplicable: 0,
+  filesSkipped: [],
+  filesSkippedCount: 0,
+  capabilityDifferential: { available: false, basis: null },
+});
+
+// Strongest first, then by rule, file and position, so numbering never depends on
+// the order the scanner happened to run in.
+function sortFindings(findings) {
+  const rank = (finding) => SEVERITIES.indexOf(finding.severity);
+  return [...findings].sort(
+    (a, b) =>
+      rank(b) - rank(a) ||
+      (a.ruleId < b.ruleId ? -1 : a.ruleId > b.ruleId ? 1 : 0) ||
+      (a.path ?? '').localeCompare(b.path ?? '') ||
+      (a.evidence[0]?.line ?? 0) - (b.evidence[0]?.line ?? 0) ||
+      (a.evidence[0]?.column ?? 0) - (b.evidence[0]?.column ?? 0),
+  );
+}
+
 // Assembles the report from deterministic stage results and checks it against
 // the contract before returning it. A report that fails validation is a bug in
 // Audyssey, never something to hand to a user.
@@ -73,6 +100,7 @@ export function buildReport({
   source,
   comparison,
   manifest,
+  scanResult = null,
   errors,
   now = () => new Date(),
 }) {
@@ -83,6 +111,38 @@ export function buildReport({
 
   let totalBytes = 0;
   for (const record of packageInventory?.files.values() ?? []) if (record.type === 'file') totalBytes += record.size;
+
+  // Number the findings, link them to files, then score them. Without a scan there
+  // is nothing to score: no score, and the verdict stays inconclusive.
+  let findings = [];
+  let summary = { verdict: 'inconclusive', riskScore: null, scoring: null };
+  const reportErrors = [...errors];
+  if (scanResult) {
+    const idOfPath = new Map(files.map((file) => [file.path, file.id]));
+    const sorted = sortFindings(scanResult.findings);
+    const kept = sorted.slice(0, SCAN_LIMITS.maxFindings);
+    if (sorted.length > kept.length) {
+      reportErrors.push({
+        stage: 'scan',
+        message: `${sorted.length - kept.length} lower-ranked finding(s) were left out to keep the report bounded (limit ${SCAN_LIMITS.maxFindings}).`,
+      });
+    }
+    findings = kept.map((finding, index) => ({
+      id: `F${index + 1}`,
+      ruleId: finding.ruleId,
+      severity: finding.severity,
+      confidence: finding.confidence,
+      scope: finding.scope,
+      title: finding.title,
+      description: finding.description,
+      fileId: finding.path === null ? null : idOfPath.get(finding.path),
+      introducedInPackage: finding.introducedInPackage,
+      evidence: finding.evidence,
+    }));
+    for (const file of files) file.findingIds = findings.filter((finding) => finding.fileId === file.id).map((finding) => finding.id);
+    const { riskScore, scoring } = scoreFindings(findings);
+    summary = { verdict: decideVerdict({ findings, riskScore, counts, sourceResolved: source.resolved }), riskScore, scoring };
+  }
 
   const report = {
     schemaVersion: SCHEMA_VERSION,
@@ -108,31 +168,18 @@ export function buildReport({
       notes: source.notes,
     },
     summary: {
-      // No scanner exists yet, so there is no security assessment: no score, and
-      // the verdict is always "inconclusive".
-      verdict: 'inconclusive',
-      riskScore: null,
-      scoring: null,
+      ...summary,
       counts,
-      findingsBySeverity: Object.fromEntries(SEVERITIES.map((severity) => [severity, 0])),
+      findingsBySeverity: Object.fromEntries(SEVERITIES.map((severity) => [severity, findings.filter((finding) => finding.severity === severity).length])),
     },
     files,
-    findings: [],
+    findings,
     manifest,
-    // The scanner does not exist yet: say so explicitly rather than leave the
-    // reader to infer "clean" from an empty findings list.
-    scan: {
-      performed: false,
-      rulesVersion: null,
-      rules: [],
-      filesScanned: 0,
-      filesNotApplicable: 0,
-      filesSkipped: [],
-      filesSkippedCount: 0,
-      capabilityDifferential: { available: false, basis: null },
-    },
+    // When no scan ran (the package archive was rejected) the report says so
+    // outright rather than leave the reader to infer "clean" from no findings.
+    scan: scanResult ? scanResult.coverage : { ...UNSCANNED },
     ai: { status: 'skipped', runs: [], classifications: [], investigations: [] },
-    errors,
+    errors: reportErrors,
   };
 
   const problems = validateReport(report);

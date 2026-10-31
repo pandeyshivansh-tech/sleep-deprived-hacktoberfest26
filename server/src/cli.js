@@ -5,6 +5,7 @@ import { parseSpec } from './ecosystems/npm/spec.js';
 import { AudysseyError, InputError } from './errors.js';
 import { DEFAULT_LIMITS } from './limits.js';
 import { formatSummary } from './report/summary.js';
+import { escapeUnsafe } from './scan/text.js';
 
 export const USAGE = `Usage:
   audyssey analyze <name>@<version> [--json] [--out <file>]
@@ -93,11 +94,11 @@ export async function run(
     return 0;
   } catch (error) {
     if (error instanceof InputError) {
-      stderr.write(`Error: ${error.message}\n`);
+      stderr.write(`Error: ${escapeUnsafe(error.message)}\n`);
       return 2;
     }
     if (error instanceof AudysseyError) {
-      stderr.write(`Error: ${error.message}\n`);
+      stderr.write(`Error: ${escapeUnsafe(error.message)}\n`);
       return 1;
     }
     if (error?.code === 'ENOENT' || error?.code === 'EACCES' || error?.code === 'EISDIR') {

@@ -13,9 +13,10 @@ export const PACKAGE_ARCHIVE_LIMITS = Object.freeze({
   maxPathDepth: 40,
   // Legitimate text compresses roughly 3-10x. Only enforced above 1 MB output.
   maxCompressionRatio: 200,
-  // File bytes kept in memory for later analysis; everything else is hashed and dropped.
-  maxRetainedFileBytes: 1 * MB,
-  maxRetainedTotalBytes: 64 * MB,
+  // File bytes kept in memory for scanning; everything else is hashed and dropped.
+  // A published file over the per-file cap is reported as skipped, never ignored.
+  maxRetainedFileBytes: 8 * MB,
+  maxRetainedTotalBytes: 200 * MB,
 });
 
 // A source repository snapshot holds tests, docs and fixtures, so it is larger.
@@ -33,8 +34,21 @@ export const NETWORK_LIMITS = Object.freeze({
   maxRedirects: 3,
 });
 
+// Scanner budgets. Matches the retention caps above: a file the scanner cannot
+// read is listed in scan.filesSkipped with the reason.
+export const SCAN_LIMITS = Object.freeze({
+  maxFileBytes: 8 * MB,
+  maxTotalBytes: 200 * MB,
+  maxMatchesPerIndicator: 50,
+  maxEvidencePerFinding: 6,
+  maxFindings: 200,
+  // Longest stretch of a line searched backward for a comment marker.
+  commentLookback: 2000,
+});
+
 export const DEFAULT_LIMITS = Object.freeze({
   package: PACKAGE_ARCHIVE_LIMITS,
   source: SOURCE_ARCHIVE_LIMITS,
   network: NETWORK_LIMITS,
+  scan: SCAN_LIMITS,
 });
