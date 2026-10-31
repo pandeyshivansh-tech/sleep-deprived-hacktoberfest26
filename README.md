@@ -23,7 +23,7 @@ This repository is being built milestone by milestone through pull requests.
 | npm retrieval, integrity check, source resolution, safe in-memory archive reading, SHA-256 file comparison, `package.json` comparison, command-line tool, real examples | Done (M1) |
 | Deterministic security scanner, capability differential, documented risk score and verdict | Done (M2) |
 | Build-artifact explainer (explaining why differences exist) | Planned (M2b), required by Problem 04 |
-| Gemma and DeepSeek analysis through local Ollama | Planned (M4) |
+| Gemma and DeepSeek analysis through local Ollama (`--ai`) | Done (M4) |
 | Analysis dashboard, analysis API, local tarball upload in the UI | Planned (M3, M5) |
 | Release monitoring | Planned (M6) |
 
@@ -76,34 +76,50 @@ runs, so a low score is never a statement that a package is safe. On a corpus of
 24 popular packages it reported no high or critical finding
 ([details](docs/risk-model.md)).
 
-**Not done yet:** Audyssey does not yet explain *why* a difference exists (is
-this file a normal build artifact?), so every difference is `unclassified` and a
-package that differs from its source is `needs-review` at best, even when
-nothing in it looks risky. It does not use the AI models yet. See
-[`examples/`](examples) for real output.
+**Not done yet:** the deterministic build-artifact explainer. Audyssey does not
+yet *prove* why a difference exists from evidence, so every difference is
+`unclassified` and a package that differs from its source is `needs-review` at
+best, even when nothing in it looks risky. With `--ai`, Gemma gives an advisory
+opinion on each difference, but a model's opinion is not evidence and does not
+change the verdict. See [`examples/`](examples) for real output.
 
 ## Planned
 
 - **Explain differences from evidence** (build configuration, entry points,
   source maps) rather than a hard-coded allowlist. Problem 04 requires this, and
   until it exists a clean built package cannot reach `expected-differences`.
-- Ask two local models to interpret the evidence (see below).
 - Release monitoring, an analysis API and an analysis dashboard.
 
 ## AI models
 
-All inference will run locally through [Ollama](https://ollama.com). There is
-no cloud LLM provider and no cloud fallback. **The models are not called yet**
-(planned for M4); the health endpoint only checks that they are installed.
+With `--ai`, two open-weight models interpret the result, entirely on your
+machine through [Ollama](https://ollama.com). There is no cloud LLM provider and
+no cloud fallback, and no other local model is ever substituted.
 
 | Model | Role |
 |---|---|
-| `gemma4:e4b` | First-pass classification of differences: expected artifact, suspicious, or needs investigation |
-| `deepseek-r1:8b` | Deeper investigation of suspicious or ambiguous findings, including obfuscated code, and explanation of their security implications and uncertainty |
+| `gemma4:e4b` | First-pass classification of every file that differs from the source: expected artifact, suspicious, or needs investigation |
+| `deepseek-r1:8b` | Deeper investigation of the strongest scanner findings, including obfuscated code: what the quoted code appears to do, the implications, and what remains uncertain |
 
-The deterministic analysis is the source of truth. Models only annotate
-existing evidence: they cannot add files, change hashes, or remove findings.
-If Ollama is not running, deterministic analysis still works.
+They run one after the other (each is unloaded after use, so they fit in 16 GB),
+and only when there is something to interpret. The deterministic analysis is the
+source of truth: the models cannot add or remove a finding, change a hash, or
+change the score or verdict, and the report is verified byte-identical outside
+`ai` afterwards. Their output is checked against the findings and files it
+refers to, and a file the scanner flagged cannot be cleared as an expected
+artifact. If Ollama is not running or a model is missing, deterministic analysis
+still completes and the report says what was unavailable. See
+[`docs/ai-analysis.md`](docs/ai-analysis.md) for the guarantees and what running
+the models locally showed (timings, failure modes).
+
+```bash
+ollama pull gemma4:e4b
+ollama pull deepseek-r1:8b
+npm run analyze -- --tarball examples/tampered-demo/debug-4.4.1-tampered.tgz --ai
+```
+
+The models can be wrong, and `--ai` takes from about 15 seconds (classification
+only) to a few minutes (investigation with the reasoning model).
 
 ## Requirements
 
@@ -141,6 +157,7 @@ keys. Options:
 |---|---|
 | `--json` | Print the full JSON report instead of the text summary |
 | `--out <file>` | Also write the JSON report to a file |
+| `--ai` | Also interpret the result with the two local models (see "AI models"). Advisory only. Needs Ollama running locally. |
 | `--tarball <file.tgz>` | Analyze a local tarball instead of downloading it. The registry metadata and the source are still looked up for the package it names. |
 
 Exit codes: `0` report produced, `1` analysis failed (for example a network

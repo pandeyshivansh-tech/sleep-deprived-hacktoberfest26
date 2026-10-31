@@ -3,6 +3,34 @@ import { escapeUnsafe } from '../scan/text.js';
 const MAX_LISTED_FILES = 40;
 const MAX_LISTED_FINDINGS = 25;
 
+const seconds = (ms) => `${(ms / 1000).toFixed(1)} s`;
+
+// The local-model section. It is labelled as advisory and never restates a score:
+// the findings and the score above come only from the deterministic scanner.
+function formatAi(report) {
+  const { ai } = report;
+  const lines = [''];
+  lines.push(`AI (local Ollama, ${ai.status}; advisory, the findings and score above are unchanged by it):`);
+  for (const run of ai.runs) {
+    lines.push(`  ${run.model.padEnd(16)} ${run.stage.padEnd(14)} ${run.status}${run.status === 'completed' ? `  ${seconds(run.durationMs)}` : ''}`);
+  }
+  if (ai.classifications.length > 0) {
+    const counts = {};
+    for (const item of ai.classifications) counts[item.label] = (counts[item.label] ?? 0) + 1;
+    const path = new Map(report.files.map((file) => [file.id, file.path]));
+    lines.push(`  Classified ${ai.classifications.length} file(s): ${Object.entries(counts).map(([label, n]) => `${n} ${label}`).join(', ')}`);
+    for (const item of ai.classifications) lines.push(`    [${item.label}] ${path.get(item.fileId)}: ${item.rationale}`);
+  }
+  for (const item of ai.investigations) {
+    const finding = report.findings.find((f) => f.id === item.findingId);
+    lines.push(`  ${item.findingId} ${finding?.ruleId ?? ''}`);
+    lines.push(`    What it does:  ${item.explanation}`);
+    lines.push(`    Implications:  ${item.implications}`);
+    lines.push(`    Uncertainty:   ${item.uncertainty}`);
+  }
+  return lines;
+}
+
 function formatScan(report) {
   const { scan, findings } = report;
   const lines = [''];
@@ -81,6 +109,7 @@ export function formatSummary(report) {
   lines.push(`Install-time scripts in the published package: ${installScripts.length > 0 ? installScripts.join(', ') : 'none'}`);
 
   if (report.scan.performed) lines.push(...formatScan(report));
+  if (report.ai.runs.length > 0) lines.push(...formatAi(report));
 
   for (const error of report.errors) lines.push(`Problem [${error.stage}]: ${error.message}`);
 

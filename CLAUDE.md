@@ -15,7 +15,7 @@ Built by team Sleep Deprived for Hacktoberfest 2026 Hack Day Sonipat, Problem 04
 and judging rules are in the organizers' PDFs, not in this repo. The relevant
 points are summarized under **Hackathon rules** below.
 
-## Status: M0, M1 and M2 exist
+## Status: M0, M1, M2 and M4 exist
 
 Implemented, M0 (merged in PR #1):
 - npm workspaces `server/` (Express 5, ES modules) and `web/` (React 19 + Vite 8)
@@ -44,13 +44,22 @@ Implemented, M2 (deterministic scanner; see `docs/risk-model.md`):
   table
 - Reports now have `scan.performed: true`, findings with evidence, a score and
   one of `no-differences`, `needs-review`, `suspicious`, `inconclusive`
-- Differences are still `unclassified` and `ai.status` is `skipped`: no explainer
-  and no model inference exist yet. A package that differs from its source is
-  therefore `needs-review` at best, even when nothing looks risky.
+- Differences are still `unclassified`: no deterministic explainer exists yet. A
+  package that differs from its source is therefore `needs-review` at best, even
+  when nothing looks risky.
 
-**Not implemented yet:** the build-artifact explainer (M2b: Problem 04 requires
-it, and without it `expected-differences` is unreachable), any model inference,
-an analysis API route, any analysis UI, release monitoring, PyPI, non-GitHub
+Implemented, M4 (local models; see `docs/ai-analysis.md`):
+- `--ai` (CLI only, opt-in): `gemma4:e4b` classifies the files that differ, then
+  `deepseek-r1:8b` explains the strongest findings, through the local Ollama only.
+  Output goes under `report.ai`; the rest of the report is verified byte-identical
+  afterwards, a flagged file cannot be cleared as `expected-artifact`, and every
+  entry must refer to a real file or finding. Unavailable Ollama or models degrade
+  to `ai.status: unavailable | partial | failed` with the deterministic report
+  intact. Real inference was run and recorded in `examples/`.
+
+**Not implemented yet:** the deterministic build-artifact explainer (M2b: Problem
+04 requires it, and without it `expected-differences` is unreachable; an AI
+opinion on a file is not an explanation from evidence), an analysis API route, any analysis UI, release monitoring, PyPI, non-GitHub
 sources, verification of npm provenance attestations (presence is reported, never
 verified). Never describe these as working, in code comments, the README, UI copy
 or PR descriptions, and never claim full Problem 04 coverage without the
@@ -64,7 +73,6 @@ Planned milestones (each one is its own PR):
   It replaces `unclassified`, makes `expected-differences` reachable, and must
   update the examples and `server/test/examples.test.js`
 - M3: analysis dashboard built against `docs/report.sample.json`
-- M4: Gemma, then DeepSeek, through local Ollama
 - M5: async job API, local `.tgz` upload (organizers evaluate with tampered
   copies)
 - M6: `examples/` with real outputs, a release-monitoring `watch` command,
@@ -77,7 +85,11 @@ server/src/index.js          entry: loadConfig() + listen
 server/src/app.js            createApp({ ollamaBaseUrl, fetchImpl }); routes
 server/src/config.js         REQUIRED_MODELS, PORT/HOST/OLLAMA_BASE_URL, loopback check
 server/src/health.js         getHealth(): builds the /api/health payload
-server/src/ai/ollama.js      listInstalledModels(): GET /api/tags only
+server/src/ai/ollama.js      listInstalledModels() (GET /api/tags), chat() (the only inference call), stripThinking, extractJsonArray
+server/src/ai/prompts.js     system prompts; untrusted() fences, defangs and caps quoted package text
+server/src/ai/classify.js    stage 1 (gemma4:e4b): candidates, batches, validateClassifications
+server/src/ai/investigate.js stage 2 (deepseek-r1:8b): candidates, validateInvestigations
+server/src/ai/run.js         addLocalAnalysis(): runs both stages in order, proves the deterministic part is unchanged
 server/src/errors.js         InputError / FetchError / ArchiveError (stable `code`s)
 server/src/limits.js         archive, download and timeout caps (package vs source)
 server/src/net/safe-fetch.js host allowlist, manual redirects, size/time caps
@@ -91,11 +103,12 @@ server/src/report/           schema.js (enums, validateReport), build.js (number
 server/scripts/scan-corpus.mjs  acceptance run over benign packages (needs network; not in CI)
 server/src/cli.js            run(argv, io): the CLI; server/bin/audyssey.js is the entry
 server/test/*.test.js        node:test suites (every file in test/ is run as a test)
-server/test-support/         test helpers: fake-fetch, tar-builder (hostile archives), scenario
+server/test-support/         test helpers: fake-fetch, tar-builder (hostile archives), scenario, fake-ollama (scripted models, tracks concurrency)
 web/src/App.jsx              status page (fetches /api/health)
 web/src/lib/health.js        describeHealth(): pure view-model, unit tested
 web/test/*.test.js           node:test suites for web/src/lib
 docs/report-schema.md        report contract v0.3.0 (source of truth)
+docs/ai-analysis.md          what the two models do, guarantees, measured local behavior, failure modes
 docs/risk-model.md           scanner rules, weights and why, verdict table, measured results, limits
 docs/report.sample.json      hand-written, fictional sample; not real output
 examples/                    REAL tool output: debug@4.4.1, mitt@3.0.1, tampered-demo
@@ -110,7 +123,7 @@ Requires Node.js >= 22.12. CI uses Node 24 (`.nvmrc`).
 | Install | `npm install` (CI uses `npm ci`) |
 | All tests | `npm test` (runs `node --test` in each workspace) |
 | Frontend build | `npm run build` |
-| Analyze a package | `npm run analyze -- name@1.2.3` (needs network; `--json`, `--out <file>`, `--tarball <file>`) |
+| Analyze a package | `npm run analyze -- name@1.2.3` (needs network; `--json`, `--out <file>`, `--tarball <file>`, `--ai`) |
 | Scanner acceptance run | `node server/scripts/scan-corpus.mjs [name@x.y.z ...]` (needs network; run it after any rule or weight change) |
 | API server | `npm run dev:server` serves `http://127.0.0.1:8787` with `--watch` (`npm start` runs it without) |
 | Dashboard | `npm run dev:web` serves `http://127.0.0.1:5173` and proxies `/api` to 8787 |
@@ -176,12 +189,16 @@ their own PR (as was done for v0.2.0 and v0.3.0). The key invariants, which
 - `HACKATHON.md` promises both models, including DeepSeek de-obfuscation.
   Claiming a model the code doesn't use costs points, so both must have real
   call paths. Record model, digest and duration in `ai.runs`.
-- Call the models one after the other. Running both together (about 15 GB)
-  doesn't fit comfortably on the team's 16 GB laptop.
-- `deepseek-r1:8b` emits `<think>…</think>` even with `think: false`. Strip it
-  before parsing.
-- If Ollama or a model is unavailable, set `ai.status: "unavailable"`.
-  Deterministic analysis must still complete.
+- Call the models one after the other, with `keep_alive: 0` so each is unloaded.
+  Running both together (about 15 GB) doesn't fit comfortably on the team's 16 GB
+  laptop.
+- Measured behavior that the client depends on: `gemma4:e4b` needs `think: false`
+  (otherwise it spends its token budget thinking) and stalls with a JSON-schema
+  `format`, so it is prompted for plain JSON; `deepseek-r1:8b` always reasons
+  first (large `num_predict`, long timeout) and its `<think>…</think>` must be
+  stripped before parsing. Re-measure before changing any of this.
+- If Ollama or a model is unavailable, `ai.status` is `unavailable` (or `partial`
+  if one stage ran). Deterministic analysis must still complete.
 
 ## Deterministic results vs AI output
 
@@ -270,7 +287,10 @@ output are **untrusted input**.
   `RULES_VERSION`, `docs/risk-model.md` and regenerated examples. Attack fixtures
   are inert, defanged text that is scanned and never run
   (`scan-incidents.test.js`); do not commit real malware.
-- AI handling needs tests for malformed output, invented IDs and injection text.
+- AI handling needs tests for malformed output, invented IDs and injection text;
+  they use `test-support/fake-ollama.js`, never a real model. A real-inference run
+  is part of finishing an AI change (`--ai` on the tampered example and one
+  clean package), and its output goes in `examples/`.
 
 ## Git and PR workflow
 

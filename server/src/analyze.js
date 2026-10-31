@@ -6,6 +6,7 @@ import { checkIntegrity, fetchTarball, fetchVersionMetadata } from './ecosystems
 import { validateSpec } from './ecosystems/npm/spec.js';
 import { ArchiveError, InputError } from './errors.js';
 import { DEFAULT_LIMITS } from './limits.js';
+import { addLocalAnalysis } from './ai/run.js';
 import { buildReport } from './report/build.js';
 import { retainPackageFile } from './scan/categorize.js';
 import { scanPackage } from './scan/index.js';
@@ -34,6 +35,7 @@ export async function analyzeNpmPackage({
   limits = DEFAULT_LIMITS,
   now = () => new Date(),
   onProgress = () => {},
+  ai = null,
 }) {
   const errors = [];
 
@@ -165,7 +167,7 @@ export async function analyzeNpmPackage({
     });
   }
 
-  const report = buildReport({
+  let report = buildReport({
     input,
     metadata,
     tarballUrl,
@@ -179,8 +181,12 @@ export async function analyzeNpmPackage({
     now,
   });
 
-  return {
-    report,
-    analysis: { metadata, packageInventory, sourceInventory: source.inventory, comparison, manifest, scanResult },
-  };
+  const analysis = { metadata, packageInventory, sourceInventory: source.inventory, comparison, manifest, scanResult };
+
+  // Optional: interpret the finished deterministic report with the two local
+  // models. `ai` is { baseUrl, fetchImpl }; the report's deterministic sections
+  // are verified unchanged afterwards.
+  if (ai) report = await addLocalAnalysis({ report, analysis, ollama: ai, onProgress });
+
+  return { report, analysis };
 }

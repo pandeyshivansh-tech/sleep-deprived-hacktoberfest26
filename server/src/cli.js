@@ -3,18 +3,22 @@ import { parseArgs } from 'node:util';
 import { analyzeNpmPackage } from './analyze.js';
 import { parseSpec } from './ecosystems/npm/spec.js';
 import { AudysseyError, InputError } from './errors.js';
+import { resolveOllamaBaseUrl } from './config.js';
 import { DEFAULT_LIMITS } from './limits.js';
 import { formatSummary } from './report/summary.js';
 import { escapeUnsafe } from './scan/text.js';
 
 export const USAGE = `Usage:
-  audyssey analyze <name>@<version> [--json] [--out <file>]
-  audyssey analyze --tarball <file.tgz> [<name>@<version>] [--json] [--out <file>]
+  audyssey analyze <name>@<version> [--ai] [--json] [--out <file>]
+  audyssey analyze --tarball <file.tgz> [<name>@<version>] [--ai] [--json] [--out <file>]
 
 Compares a published npm package with its source repository.
 Nothing from the package is executed, installed or written to disk.
 
 Options:
+  --ai               Also interpret the result with local models through Ollama
+                     (gemma4:e4b, then deepseek-r1:8b). Advisory only: it never
+                     changes a finding or the score. Needs Ollama running locally.
   --json             Print the full JSON report instead of the text summary
   --out <file>       Also write the JSON report to <file>
   --tarball <file>   Analyze a local .tgz instead of downloading it. The registry
@@ -35,6 +39,8 @@ export async function run(
     writeFile = fsWriteFile,
     limits = DEFAULT_LIMITS,
     now,
+    env = process.env,
+    aiFetchImpl = fetch,
   } = {},
 ) {
   let args;
@@ -45,6 +51,7 @@ export async function run(
       options: {
         json: { type: 'boolean', default: false },
         out: { type: 'string' },
+        ai: { type: 'boolean', default: false },
         tarball: { type: 'string' },
         help: { type: 'boolean', short: 'h', default: false },
       },
@@ -78,7 +85,17 @@ export async function run(
       tarballBytes = await readFile(args.values.tarball);
     }
 
+    let ollama = null;
+    if (args.values.ai) {
+      try {
+        ollama = { baseUrl: resolveOllamaBaseUrl(env.OLLAMA_BASE_URL || undefined), fetchImpl: aiFetchImpl };
+      } catch (error) {
+        throw new InputError(error.message, 'bad-ollama-url');
+      }
+    }
+
     const { report } = await analyzeNpmPackage({
+      ai: ollama,
       name,
       version,
       tarballBytes,

@@ -33,6 +33,26 @@ Findings:   4 (2 high, 1 medium, 1 info)
   [info] sensitive-env-access src/node.js:124
       Reads every environment variable
 
+AI (local Ollama, completed; advisory, the findings and score above are unchanged by it):
+  gemma4:e4b       classification completed  10.6 s
+  deepseek-r1:8b   investigation  completed  139.4 s
+  Classified 3 file(s): 2 needs-investigation, 1 suspicious
+    [needs-investigation] package.json: The scanner flags suggest an install script was added or modified, which is suspicious but not definitively malicious without more context.
+    [needs-investigation] src/node.js: The scanner flagged potential sensitive environment access, but the code snippet provided is insufficient to confirm malicious intent.
+    [suspicious] lib/telemetry.min.js: The file is explicitly described as a 'tampered release' simulation, suggesting it was added intentionally to confuse or compromise.
+  F1 install-script-added
+    What it does:  The package.json file includes a 'postinstall' script that runs 'node lib/telemetry.min.js', but the source code does not contain this file. This appears to be an additional script based on the evidence.
+    Implications:  If executed, this script could potentially run code that collects user data or performs other actions, as it is not part of the original source.
+    Uncertainty:   The evidence does not reveal the contents or purpose of lib/telemetry.min.js, so it is unclear what the script does or if it is malicious.
+  F2 integrity-mismatch
+    What it does:  The supplied tarball has a different SHA-512 hash than the expected published release, specifically sha512-ociR6DfksHSjhv9DRZuW0ip9xnUJbr5msm5R1+JPWMbA9385UFmxqJdzDpvCfQ38U2XJcgAXzg+C63j2Lmp2zg== instead of the expected sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==.
+    Implications:  A mismatched tarball could contain altered code, potentially leading to security vulnerabilities or unauthorized behavior when installed.
+    Uncertainty:   The evidence does not show the contents of the tarball or why the hash differs, so the actual risk or modification is unknown.
+  F3 install-script-runs-unsourced-file
+    What it does:  The 'postinstall' script in package.json runs the file lib/telemetry.min.js, which is not part of the source code. This file is minified and not examined in the evidence.
+    Implications:  Running this unsourced file could result in executing code that performs telemetry or other functions, possibly with unintended consequences.
+    Uncertainty:   The minified nature of lib/telemetry.min.js means its functionality cannot be determined from the evidence, and it is unclear if it is safe or malicious.
+
 Risk score: 68/100 (audyssey-risk-v1; the breakdown is in the JSON report)
 Verdict:    suspicious
 The scan matches patterns in text. It can miss obfuscated or dynamically built code and can match code that never runs, so a low score does not mean a package is safe.

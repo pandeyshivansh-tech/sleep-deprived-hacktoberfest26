@@ -4,7 +4,7 @@
     "name": "audyssey",
     "version": "0.1.0"
   },
-  "generatedAt": "2026-10-31T22:24:35.926Z",
+  "generatedAt": "2026-10-31T22:50:09.882Z",
   "input": {
     "ecosystem": "npm",
     "name": "debug",
@@ -624,10 +624,60 @@
     }
   },
   "ai": {
-    "status": "skipped",
-    "runs": [],
-    "classifications": [],
-    "investigations": []
+    "status": "completed",
+    "runs": [
+      {
+        "stage": "classification",
+        "model": "gemma4:e4b",
+        "digest": "eb2177adf7646d15faead94fdad6d3e170dc8015653418a3b7d5d52a6380be5b",
+        "durationMs": 10565,
+        "status": "completed"
+      },
+      {
+        "stage": "investigation",
+        "model": "deepseek-r1:8b",
+        "digest": "6995872bfe4c521a67b32da386cd21d5c6e819b6e0d62f79f64ec83be99f5763",
+        "durationMs": 139431,
+        "status": "completed"
+      }
+    ],
+    "classifications": [
+      {
+        "fileId": "f8",
+        "label": "needs-investigation",
+        "rationale": "The scanner flags suggest an install script was added or modified, which is suspicious but not definitively malicious without more context."
+      },
+      {
+        "fileId": "f12",
+        "label": "needs-investigation",
+        "rationale": "The scanner flagged potential sensitive environment access, but the code snippet provided is insufficient to confirm malicious intent."
+      },
+      {
+        "fileId": "f7",
+        "label": "suspicious",
+        "rationale": "The file is explicitly described as a 'tampered release' simulation, suggesting it was added intentionally to confuse or compromise."
+      }
+    ],
+    "investigations": [
+      {
+        "findingId": "F1",
+        "explanation": "The package.json file includes a 'postinstall' script that runs 'node lib/telemetry.min.js', but the source code does not contain this file. This appears to be an additional script based on the evidence.",
+        "implications": "If executed, this script could potentially run code that collects user data or performs other actions, as it is not part of the original source.",
+        "uncertainty": "The evidence does not reveal the contents or purpose of lib/telemetry.min.js, so it is unclear what the script does or if it is malicious."
+      },
+      {
+        "findingId": "F2",
+        "explanation": "The supplied tarball has a different SHA-512 hash than the expected published release, specifically sha512-ociR6DfksHSjhv9DRZuW0ip9xnUJbr5msm5R1+JPWMbA9385UFmxqJdzDpvCfQ38U2XJcgAXzg+C63j2Lmp2zg== instead of the expected sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==.",
+        "implications": "A mismatched tarball could contain altered code, potentially leading to security vulnerabilities or unauthorized behavior when installed.",
+        "uncertainty": "The evidence does not show the contents of the tarball or why the hash differs, so the actual risk or modification is unknown."
+      },
+      {
+        "findingId": "F3",
+        "explanation": "The 'postinstall' script in package.json runs the file lib/telemetry.min.js, which is not part of the source code. This file is minified and not examined in the evidence.",
+        "implications": "Running this unsourced file could result in executing code that performs telemetry or other functions, possibly with unintended consequences.",
+        "uncertainty": "The minified nature of lib/telemetry.min.js means its functionality cannot be determined from the evidence, and it is unclear if it is safe or malicious."
+      }
+    ]
   },
   "errors": []
 }

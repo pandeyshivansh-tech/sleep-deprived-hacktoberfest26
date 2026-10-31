@@ -40,14 +40,38 @@ test('examples claim only what the product does today', async () => {
     const report = JSON.parse(await read(directory, 'report.json'));
     // The scanner ran, but nothing explains differences or calls a model yet.
     assert.equal(report.scan.performed, true, directory);
-    assert.equal(report.ai.status, 'skipped', directory);
-    assert.deepEqual(report.ai.runs, [], directory);
+    // The models are advisory and only run when there is something to interpret.
+    // Whatever ran must be one of the two named models: never anything else.
+    assert.ok(['skipped', 'completed'].includes(report.ai.status), `${directory}: ${report.ai.status}`);
+    for (const run of report.ai.runs) {
+      assert.ok(['gemma4:e4b', 'deepseek-r1:8b'].includes(run.model), `${directory}: unexpected model ${run.model}`);
+      assert.equal(run.status, 'completed', directory);
+      assert.match(run.digest, /^[0-9a-f]{64}$/, `${directory}: the model digest is recorded`);
+      assert.ok(run.durationMs > 0, directory);
+    }
+    assert.equal(report.ai.runs.length === 0, report.ai.status === 'skipped', directory);
     assert.ok(report.summary.scoring !== null && Number.isInteger(report.summary.riskScore), directory);
     assert.ok(!['expected-differences'].includes(report.summary.verdict), `${directory}: no explainer exists, so differences cannot be "expected"`);
     for (const file of report.files.filter((f) => f.status !== 'identical')) {
       assert.equal(file.explanation.category, 'unclassified', `${directory}/${file.path}`);
     }
   }
+});
+
+test('examples produced with the local models have real, validated model output', async () => {
+  const mitt = JSON.parse(await read('mitt@3.0.1', 'report.json'));
+  assert.deepEqual(mitt.ai.runs.map((r) => r.model), ['gemma4:e4b'], 'no findings, so only the classification stage had work');
+  assert.equal(mitt.ai.classifications.length, mitt.summary.counts.packageOnly + mitt.summary.counts.modified);
+
+  const tampered = JSON.parse(await read('tampered-demo', 'report.json'));
+  assert.deepEqual(tampered.ai.runs.map((r) => r.model), ['gemma4:e4b', 'deepseek-r1:8b'], 'both models, in order');
+  assert.ok(tampered.ai.classifications.length >= 1 && tampered.ai.investigations.length >= 1);
+  const ids = new Set(tampered.findings.map((f) => f.id));
+  assert.ok(tampered.ai.investigations.every((i) => ids.has(i.findingId)), 'the model explains only findings the scanner made');
+  assert.equal(tampered.summary.riskScore, 68, 'and the score is the deterministic one');
+
+  const debug = JSON.parse(await read('debug@4.4.1', 'report.json'));
+  assert.equal(debug.ai.status, 'skipped', 'nothing to interpret, so no model was called');
 });
 
 test('each example demonstrates what its README says', async () => {
