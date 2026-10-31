@@ -15,7 +15,7 @@ Built by team Sleep Deprived for Hacktoberfest 2026 Hack Day Sonipat, Problem 04
 and judging rules are in the organizers' PDFs, not in this repo. The relevant
 points are summarized under **Hackathon rules** below.
 
-## Status: M0, M1, M2 and M4 exist
+## Status: M0, M1, M2, M2b, M3 and M4 exist
 
 Implemented, M0 (merged in PR #1):
 - npm workspaces `server/` (Express 5, ES modules) and `web/` (React 19 + Vite 8)
@@ -58,6 +58,24 @@ Implemented, M2b (evidence-based explainer, `server/src/explain/`):
   `expected-differences` needs every difference explained and no finding of low
   severity or above. Build configuration beyond `package.json` is not read.
 
+Implemented, M3 (report dashboard, `web/`):
+- A dark-first React dashboard that **views reports**: open a `report.json` (file
+  picker or drop) or one of the three bundled real examples. Every report is
+  checked with the backend's own `validateReport` (imported from
+  `server/src/report/schema.js`, not copied) before rendering; invalid, wrong
+  version, oversized and non-report files show a described error.
+- Views: workspace, overview (verdict, score and breakdown, severity, integrity,
+  source resolution, file counts, scan coverage, AI status, `package.json`
+  changes), file explorer (search by path or hash prefix; filter by difference,
+  explanation category, unexplained, findings, model-flagged; hashes, sizes,
+  explainer evidence), findings (evidence with path:line, linked files), and a
+  Local AI page. Model output is always shown apart from, and labelled as advisory
+  next to, deterministic results.
+- Logic is in `web/src/lib/` (`report-load.js`, `report-view.js`, `examples.js`) and
+  tested in `web/test/`. The UI starts no analysis and has no API route behind it.
+  No `dangerouslySetInnerHTML`; package text is rendered as text; only https
+  GitHub repository URLs become links. No new dependencies; transitions are CSS.
+
 Implemented, M4 (local models; see `docs/ai-analysis.md`):
 - `--ai` (CLI only, opt-in): `gemma4:e4b` classifies the files that differ, then
   `deepseek-r1:8b` explains the strongest findings, through the local Ollama only.
@@ -67,7 +85,7 @@ Implemented, M4 (local models; see `docs/ai-analysis.md`):
   to `ai.status: unavailable | partial | failed` with the deterministic report
   intact. Real inference was run and recorded in `examples/`.
 
-**Not implemented yet:** an analysis API route, any analysis UI, release monitoring, PyPI, non-GitHub
+**Not implemented yet:** an analysis API route, starting analyses or uploading a tarball from the UI, release monitoring, PyPI, non-GitHub
 sources, verification of npm provenance attestations (presence is reported, never
 verified). Never describe these as working, in code comments, the README, UI copy
 or PR descriptions. UI text must not pretend a feature works. The current page explicitly
@@ -76,7 +94,6 @@ low score or an empty findings list as "safe".
 
 Planned milestones (each one is its own PR):
 - M2b (done): the evidence-based build-artifact explainer above
-- M3: analysis dashboard built against `docs/report.sample.json`
 - M5: async job API, local `.tgz` upload (organizers evaluate with tampered
   copies)
 - M6: `examples/` with real outputs, a release-monitoring `watch` command,
@@ -108,8 +125,9 @@ server/scripts/scan-corpus.mjs  acceptance run over benign packages (needs netwo
 server/src/cli.js            run(argv, io): the CLI; server/bin/audyssey.js is the entry
 server/test/*.test.js        node:test suites (every file in test/ is run as a test)
 server/test-support/         test helpers: fake-fetch, tar-builder (hostile archives), scenario, fake-ollama (scripted models, tracks concurrency)
-web/src/App.jsx              status page (fetches /api/health)
-web/src/lib/health.js        describeHealth(): pure view-model, unit tested
+web/src/App.jsx              app shell: navigation, system status, open-report state
+web/src/components/          Workspace, Overview, FileExplorer, Findings, AiPanel, SystemStatus, ui
+web/src/lib/                 health.js, report-load.js (validate), report-view.js (filter/summaries), examples.js (bundled real reports)
 web/test/*.test.js           node:test suites for web/src/lib
 docs/report-schema.md        report contract v0.3.0 (source of truth)
 docs/ai-analysis.md          what the two models do, guarantees, measured local behavior, failure modes
