@@ -25,7 +25,7 @@ This repository is being built milestone by milestone through pull requests.
 | Build-artifact explainer (explaining why differences exist) | Implemented (M2b): source maps, `sourceMappingURL`, `types` entries, `files` lists; see [`docs/risk-model.md`](docs/risk-model.md#explaining-differences) |
 | Gemma and DeepSeek analysis through local Ollama (`--ai`) | Done (M4) |
 | Report dashboard: open a `report.json` (validated against the contract) or a bundled example; overview, file explorer, findings, local-AI output | Done (M3) |
-| Analysis API, starting analyses and uploading a tarball from the UI | Planned (M5) |
+| Analysis API (`POST /api/analyze`, `GET /api/jobs/:id`) and dashboard `.tgz` upload with live job progress | Done (M5) |
 | Release monitoring | Planned (M6) |
 
 This README describes only what exists, and each milestone PR updates it.
@@ -91,7 +91,7 @@ verdict. See [`examples/`](examples) for real output.
 
 ## Planned
 
-- Release monitoring, and an analysis API so the dashboard can start analyses itself.
+- Release monitoring.
 
 ## AI models
 
@@ -173,8 +173,9 @@ npm run analyze -- --tarball examples/tampered-demo/debug-4.4.1-tampered.tgz
 
 ### Run the server and dashboard
 
-The dashboard shows service and model status and **views reports**: open a `report.json` produced by the CLI (it is validated against the report contract in the browser and never uploaded) or one of the bundled real examples. It cannot start an analysis yet. Analysis
-is available from the command line, not yet from the API or UI.
+The dashboard shows service and model status, **analyzes an uploaded `.tgz`**, and
+**views reports** (open a `report.json` from the CLI, or a bundled real example; both
+are validated against the report contract in the browser).
 
 Start the API server on http://127.0.0.1:8787:
 
@@ -188,6 +189,38 @@ In a second terminal, start the dashboard on http://127.0.0.1:5173. It proxies
 ```bash
 npm run dev:web
 ```
+
+### Analyze a package from the dashboard
+
+1. Start both processes (above) and open http://127.0.0.1:5173.
+2. In **Analyze a package (.tgz)**, choose or drop an npm package archive (for
+   example the output of `npm pack debug@4.4.1`). The file name and size are shown
+   before anything is sent; click **Analyze**.
+3. The page shows the job's real state (`queued`, `running`, `completed`, `failed`)
+   and the pipeline's actual steps. When it completes, the report opens in the
+   Overview, Files, Findings and Local AI views, marked **Fresh analysis**.
+4. Tick **Also interpret with the local models** to add `gemma4:e4b` and
+   `deepseek-r1:8b` output (needs Ollama running with both models; it is slower and
+   advisory only).
+
+**Limits and behavior**
+- Upload limit: **25 MB** compressed, enforced while the body is read (`413` beyond
+  it). The archive is also bound by the existing entry, size, depth and
+  compression-ratio limits.
+- Jobs live **in memory only**: they disappear when the server restarts or after an
+  hour, and nothing is written to disk. One analysis runs at a time, two more may
+  wait; beyond that the server answers `429`.
+- The package is read, never run: no extraction to disk, no install, no scripts, no
+  `import` of package code. The matching source is still fetched from the npm
+  registry and GitHub, so the server needs internet access (a package the registry
+  does not know cannot be compared).
+- AI is advisory and local only. If Ollama or a model is missing, the deterministic
+  analysis still completes and the report says the AI status honestly. The models
+  never change findings, the score or the verdict.
+- Known limitations: no authentication (the server is meant for `127.0.0.1`), no
+  persistence, no way to cancel a running job (the page can only stop watching), and
+  the scanner is heuristic: a clean result is not a statement that a package is safe.
+
 
 Check health directly:
 

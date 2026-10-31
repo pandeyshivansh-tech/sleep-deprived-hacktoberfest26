@@ -247,3 +247,14 @@ details.how[open] summary { margin-bottom: 8px; }
   .file-meta { grid-column: 2; text-align: left; }
 }
 @media (max-width: 640px) { .grid-3 { grid-template-columns: 1fr; } .dropzone { flex-direction: column; align-items: flex-start; } }
+
+/* ---- upload / jobs ---- */
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #0a0b0d; font-weight: 600; }
+.btn-primary:hover:not(:disabled) { background: #a3a9ff; border-color: #a3a9ff; }
+.check { display: flex; gap: 10px; align-items: flex-start; color: var(--text-2); }
+.check input { margin-top: 4px; accent-color: var(--accent); }
+.check.is-disabled { color: var(--text-3); }
+.job { display: grid; gap: 10px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
+.steps { display: grid; gap: 4px; padding-left: 18px; list-style: decimal; color: var(--text-2); font-size: 12.5px; }
+.steps li.is-current { color: var(--text); }
+.steps li.is-current::marker { color: var(--accent); }
