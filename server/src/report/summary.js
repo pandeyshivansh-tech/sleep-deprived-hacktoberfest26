@@ -1,4 +1,33 @@
+import { escapeUnsafe } from '../scan/text.js';
+
 const MAX_LISTED_FILES = 40;
+const MAX_LISTED_FINDINGS = 25;
+
+function formatScan(report) {
+  const { scan, findings } = report;
+  const lines = [''];
+  lines.push(`Scan:       ${scan.filesScanned} file(s) scanned, ${scan.filesSkippedCount} skipped, ${scan.filesNotApplicable} not applicable`);
+  for (const skipped of scan.filesSkipped.slice(0, 10)) lines.push(`            - not scanned (${skipped.reason}): ${skipped.path}`);
+  if (scan.filesSkippedCount > 10) lines.push(`            - ... and ${scan.filesSkippedCount - 10} more not scanned (see the JSON report)`);
+  lines.push(`            - comparison with the source: ${scan.capabilityDifferential.basis}`);
+
+  lines.push('');
+  if (findings.length === 0) {
+    lines.push('Findings:   none');
+    return lines;
+  }
+  const bySeverity = report.summary.findingsBySeverity;
+  const tally = ['critical', 'high', 'medium', 'low', 'info'].filter((severity) => bySeverity[severity] > 0).map((severity) => `${bySeverity[severity]} ${severity}`);
+  lines.push(`Findings:   ${findings.length} (${tally.join(', ')})`);
+  for (const finding of findings.slice(0, MAX_LISTED_FINDINGS)) {
+    const evidence = finding.evidence[0];
+    const place = evidence?.path ? `${evidence.path}:${evidence.line}` : 'package';
+    lines.push(`  [${finding.severity}] ${finding.ruleId} ${place}`);
+    lines.push(`      ${finding.title}`);
+  }
+  if (findings.length > MAX_LISTED_FINDINGS) lines.push(`  ... and ${findings.length - MAX_LISTED_FINDINGS} more (see the JSON report)`);
+  return lines;
+}
 
 // A plain-text rendering of a report, for the CLI. It restates what the report
 // contains and nothing more.
@@ -51,10 +80,21 @@ export function formatSummary(report) {
   const installScripts = Object.keys(manifest.installScripts.package);
   lines.push(`Install-time scripts in the published package: ${installScripts.length > 0 ? installScripts.join(', ') : 'none'}`);
 
+  if (report.scan.performed) lines.push(...formatScan(report));
+
   for (const error of report.errors) lines.push(`Problem [${error.stage}]: ${error.message}`);
 
   lines.push('');
-  lines.push(`Verdict:    ${summary.verdict}`);
-  lines.push('Security assessment: not performed. This build compares files and metadata only. It does not judge whether a difference is expected or suspicious.');
-  return lines.join('\n');
+  if (report.scan.performed) {
+    const basis = source.resolved ? '' : '; based on the package alone, because the source could not be compared';
+    lines.push(`Risk score: ${summary.riskScore}/100 (${summary.scoring.model}${basis}; the breakdown is in the JSON report)`);
+    lines.push(`Verdict:    ${summary.verdict}`);
+    lines.push('The scan matches patterns in text. It can miss obfuscated or dynamically built code and can match code that never runs, so a low score does not mean a package is safe.');
+  } else {
+    lines.push(`Verdict:    ${summary.verdict}`);
+    lines.push('Security assessment: not performed (the package could not be scanned).');
+  }
+  // File names, notes and messages come from the package: show control characters
+  // (terminal escapes, bidirectional overrides) as visible text, never as themselves.
+  return escapeUnsafe(lines.join('\n'));
 }

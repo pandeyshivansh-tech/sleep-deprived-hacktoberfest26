@@ -21,5 +21,9 @@ node server/bin/audyssey.js analyze mitt@3.0.1 --out "examples/mitt@3.0.1/report
   output, and a generated file is never assumed to be safe.
 - 9 files are `source-only`: `src/index.ts`, the tests, and repository tooling.
 
-This is the case the later explainer milestone targets: telling build output
-that traces back to `src/` from a file that has no business being there.
+- The scanner read the published code and found nothing to report. Risk score 0.
+- The verdict is `needs-review`, not `no-differences`: the build output differs
+  from the source and nothing can explain it yet. Once the build-artifact
+  explainer exists this package is the case it is meant to settle, by telling
+  build output that traces back to `src/` from a file that has no business being
+  there. Until then Audyssey does not call differences "expected".

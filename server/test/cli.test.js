@@ -43,8 +43,11 @@ test('prints a text summary and exits 0', async () => {
   assert.match(text, /exact commit recorded by npm/);
   assert.match(text, /1 identical, 1 modified, 1 package-only, 1 source-only/);
   assert.match(text, /package-only\s+dist\/a\.js/);
-  assert.match(text, /Verdict:    inconclusive/);
-  assert.match(text, /Security assessment: not performed/);
+  assert.match(text, /Scan:\s+3 file\(s\) scanned, 0 skipped/);
+  assert.match(text, /Findings:   none/);
+  assert.match(text, /Risk score: 0\/100 \(audyssey-risk-v1/);
+  assert.match(text, /Verdict:    needs-review/);
+  assert.match(text, /a low score does not mean a package is safe/);
   assert.match(err.join(''), /Fetching npm metadata/);
 });
 
@@ -155,10 +158,12 @@ test('summary: an unresolved source is stated plainly and nothing is called clea
   assert.match(text, /Source:     UNRESOLVED/);
   assert.match(text, /none could be compared/);
   assert.match(text, /not compared \(No source snapshot/);
-  assert.doesNotMatch(text, /\b(clean|safe|malicious|trusted)\b/i);
+  assert.match(text, /Risk score: 0\/100 \(audyssey-risk-v1; based on the package alone, because the source could not be compared/);
+  // The summary never claims the package is fine; its only use of "safe" is the disclaimer.
+  assert.doesNotMatch(text.replace(/a low score does not mean a package is safe\./, ''), /\b(clean|safe|malicious|trusted)\b/i);
 });
 
-test('summary: a failed integrity check is called out', async () => {
+test('summary: a failed integrity check is called out, as a finding', async () => {
   const s = makeScenario({
     packageFiles: { 'package.json': manifest() },
     sourceFiles: { 'package.json': manifest() },
@@ -167,5 +172,32 @@ test('summary: a failed integrity check is called out', async () => {
   const { report } = await analyzeNpmPackage({ name: 'demo-pkg', version: '1.0.0', fetchImpl: s.fetchImpl, now: FIXED_NOW });
   const text = formatSummary(report);
   assert.match(text, /NOT VERIFIED/);
-  assert.match(text, /Problem \[integrity\]/);
+  assert.match(text, /\[high\] integrity-mismatch package/);
+  assert.match(text, /downloaded tarball does not match the registry checksum/);
+});
+
+test('summary: findings list their rule, place and title, strongest first', async () => {
+  const s = makeScenario({
+    packageFiles: { 'package.json': manifest({ scripts: { postinstall: 'node x.js' } }), 'x.js': 'eval(atob("YQ=="))' },
+    sourceFiles: { 'package.json': manifest(), 'src/index.js': 'ok' },
+  });
+  const { report } = await analyzeNpmPackage({ name: 'demo-pkg', version: '1.0.0', fetchImpl: s.fetchImpl, now: FIXED_NOW });
+  const lines = formatSummary(report).split('\n');
+  const listed = lines.filter((line) => /^ {2}\[(high|medium|low|info|critical)\]/.test(line));
+  assert.match(listed[0], /^ {2}\[high\] /);
+  assert.ok(listed.some((line) => /decoded-code-execution x\.js:1/.test(line)));
+  assert.ok(listed.some((line) => /install-script-added package\.json:\d+/.test(line)));
+  assert.match(lines.join('\n'), /Findings:   \d+ \(\d+ high/);
+});
+
+test('summary: names and messages from the package cannot inject terminal control sequences', async () => {
+  const esc = String.fromCodePoint(0x1b);
+  const rlo = String.fromCodePoint(0x202e);
+  const hostile = makeNpmTarball({ 'package.json': manifest(), [`lib/${esc}[2Jevil${rlo}.js`]: 'eval(x)' });
+  const s = makeScenario({ packageFiles: { 'package.json': manifest() }, sourceFiles: { 'package.json': manifest() } });
+  const { report } = await analyzeNpmPackage({ tarballBytes: hostile, fetchImpl: s.fetchImpl, now: FIXED_NOW });
+  const text = formatSummary(report);
+  assert.ok(text.includes('dynamic-code-execution'), 'the hostile file is still reported');
+  assert.ok(!text.includes(esc) && !text.includes(rlo), 'no raw control characters in the output');
+  assert.match(text, /\\u\{1b\}/);
 });

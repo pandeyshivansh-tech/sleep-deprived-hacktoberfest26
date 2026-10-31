@@ -6,24 +6,25 @@ Every `report.json` follows the [report contract](../docs/report-schema.md).
 
 | Example | Input | What it shows |
 |---|---|---|
-| [`debug@4.4.1`](debug@4.4.1) | npm registry | A package published straight from source: the published files are identical to the source, and the only differences are tests and tooling that were never published |
-| [`mitt@3.0.1`](mitt@3.0.1) | npm registry | A package with a build step: `dist/` and `index.d.ts` exist only in the published package, and `src/` and tests only in the source |
-| [`tampered-demo`](tampered-demo) | local `.tgz` | A deliberately modified copy of `debug@4.4.1`: checksum mismatch, an added install script, an added file, a modified file |
+| [`debug@4.4.1`](debug@4.4.1) | npm registry | A package published straight from source: every published file matches the source, nothing was flagged, and the verdict is `no-differences` |
+| [`mitt@3.0.1`](mitt@3.0.1) | npm registry | A package with a build step: `dist/` exists only in the published package. The scanner finds nothing, but the build output is unexplained, so the verdict is `needs-review` with a score of 0 |
+| [`tampered-demo`](tampered-demo) | local `.tgz` | A deliberately modified copy of `debug@4.4.1`: checksum mismatch, an added install script that runs an added file. Two distinct strong rules make it `suspicious` (68/100) |
 
-## What these examples do and do not show
+## What these examples show, and what they do not
 
-Audyssey currently does deterministic comparison only: it retrieves the package
-and the matching source, compares every file by SHA-256, compares `package.json`
-field by field, and reports provenance and integrity. It does **not** yet
-explain whether a difference is a normal build artifact or suspicious, scan code
-for risky behavior, or call the AI models. Accordingly, every report has:
+Audyssey retrieves the package and the matching source, compares every file by
+SHA-256, compares `package.json`, checks the registry checksum, and runs a
+deterministic scanner over the published files (see
+[`docs/risk-model.md`](../docs/risk-model.md)). It produces a risk score with a
+per-finding breakdown and a verdict. It does **not** yet:
 
-- `scan.performed: false`, `summary.verdict: "inconclusive"` and
-  `summary.riskScore: null` (no security assessment was performed)
-- `explanation.category: "unclassified"` for each difference
-- `ai.status: "skipped"` (no model was used)
+- explain whether a difference is a normal build artifact, so every difference is
+  `unclassified` and a package with differences is `needs-review` at best;
+- call the AI models (`ai.status` is `skipped` in every report).
 
-The reports are the unmodified evidence that later analysis will build on.
+The scanner matches patterns in text. It can miss obfuscated or dynamically built
+code and can match code that never runs, so a low score is not a statement that
+a package is safe.
 
 ## Reproducing
 

@@ -23,9 +23,11 @@ function linkEscapesRoot(entry, relativePath, root) {
 // - `directory` restricts a source snapshot to a monorepo package subdirectory.
 // - Files get a SHA-256 of their bytes; links get one of their target text, so a
 //   changed or added link always shows up as a difference.
-// - File bytes are kept only for small files (bounded in total) so later stages
-//   can read them; everything else is hashed and released.
-export function buildInventory(parsed, { directory = null, limits }) {
+// - File bytes are kept only for files `retain(path, head)` accepts, and only
+//   within the per-file and total retention budgets, so later stages can read
+//   them; everything else is hashed and released. The first bytes of every file
+//   are always kept (`head`) so executables can be recognised by magic number.
+export function buildInventory(parsed, { directory = null, limits, retain = () => true }) {
   if (parsed.entries.length === 0) throw new ArchiveError('Archive is empty', 'empty-archive');
 
   const files = new Map();
@@ -71,8 +73,11 @@ export function buildInventory(parsed, { directory = null, limits }) {
     if (entry.type === 'file') {
       stats.files += 1;
       let data = null;
+      const head = Buffer.from(entry.data.subarray(0, 16));
       const keep =
-        entry.size <= limits.maxRetainedFileBytes && retainedBytes + entry.size <= limits.maxRetainedTotalBytes;
+        retain(relativePath, head) &&
+        entry.size <= limits.maxRetainedFileBytes &&
+        retainedBytes + entry.size <= limits.maxRetainedTotalBytes;
       if (keep) {
         data = Buffer.from(entry.data); // copy: lets the large decompressed buffer be released
         retainedBytes += entry.size;
@@ -83,6 +88,7 @@ export function buildInventory(parsed, { directory = null, limits }) {
         size: entry.size,
         mode: entry.mode,
         sha256: sha256(entry.data),
+        head,
         data,
       });
     } else {
@@ -95,6 +101,7 @@ export function buildInventory(parsed, { directory = null, limits }) {
         sha256: sha256(Buffer.from(entry.linkTarget, 'utf8')),
         linkTarget: entry.linkTarget,
         linkEscapes: linkEscapesRoot(entry, relativePath, root),
+        head: null,
         data: null,
       });
     }

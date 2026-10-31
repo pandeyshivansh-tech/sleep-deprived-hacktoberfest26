@@ -4,7 +4,7 @@
     "name": "audyssey",
     "version": "0.1.0"
   },
-  "generatedAt": "2026-10-31T21:50:57.526Z",
+  "generatedAt": "2026-10-31T22:24:34.798Z",
   "input": {
     "ecosystem": "npm",
     "name": "debug",
@@ -45,9 +45,24 @@
     ]
   },
   "summary": {
-    "verdict": "inconclusive",
-    "riskScore": null,
-    "scoring": null,
+    "verdict": "no-differences",
+    "riskScore": 0,
+    "scoring": {
+      "model": "audyssey-risk-v1",
+      "cap": 100,
+      "rawTotal": 0,
+      "contributions": [
+        {
+          "findingId": "F1",
+          "ruleId": "sensitive-env-access",
+          "base": 0,
+          "confidenceFactor": 0.7,
+          "introducedFactor": 0.25,
+          "repeatFactor": 1,
+          "points": 0
+        }
+      ]
+    },
     "counts": {
       "identical": 7,
       "modified": 0,
@@ -55,7 +70,7 @@
       "sourceOnly": 6
     },
     "findingsBySeverity": {
-      "info": 0,
+      "info": 1,
       "low": 0,
       "medium": 0,
       "high": 0,
@@ -78,7 +93,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -98,7 +113,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -118,7 +133,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -184,7 +199,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -302,7 +317,9 @@
           "SHA-256 hashes match."
         ]
       },
-      "findingIds": []
+      "findingIds": [
+        "F1"
+      ]
     },
     {
       "id": "f12",
@@ -319,7 +336,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -339,13 +356,34 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
     }
   ],
-  "findings": [],
+  "findings": [
+    {
+      "id": "F1",
+      "ruleId": "sensitive-env-access",
+      "severity": "info",
+      "confidence": "medium",
+      "scope": "file",
+      "title": "Reads every environment variable",
+      "description": "The file lists all environment variables, which include credentials. This is a pattern match, not proof that the code runs or succeeds.",
+      "fileId": "f11",
+      "introducedInPackage": false,
+      "evidence": [
+        {
+          "path": "src/node.js",
+          "line": 124,
+          "column": 23,
+          "indicator": "env.enumerate",
+          "snippet": "js */ exports.inspectOpts = Object.keys(process.env).filter(key => { return /^debug_/i.test(key); }).reduce((obj, key) =>"
+        }
+      ]
+    }
+  ],
   "manifest": {
     "compared": true,
     "reason": null,
@@ -356,16 +394,105 @@
     }
   },
   "scan": {
-    "performed": false,
-    "rulesVersion": null,
-    "rules": [],
-    "filesScanned": 0,
-    "filesNotApplicable": 0,
+    "performed": true,
+    "rulesVersion": "m2-1",
+    "rules": [
+      {
+        "id": "dynamic-code-execution",
+        "version": 1
+      },
+      {
+        "id": "decoded-code-execution",
+        "version": 1
+      },
+      {
+        "id": "process-execution",
+        "version": 1
+      },
+      {
+        "id": "network-access",
+        "version": 1
+      },
+      {
+        "id": "hardcoded-endpoint",
+        "version": 1
+      },
+      {
+        "id": "sensitive-env-access",
+        "version": 1
+      },
+      {
+        "id": "sensitive-file-access",
+        "version": 1
+      },
+      {
+        "id": "credential-network-combination",
+        "version": 1
+      },
+      {
+        "id": "obfuscated-code",
+        "version": 1
+      },
+      {
+        "id": "network-hook-wallet-swap",
+        "version": 1
+      },
+      {
+        "id": "global-network-hook",
+        "version": 1
+      },
+      {
+        "id": "llm-directed-text",
+        "version": 1
+      },
+      {
+        "id": "unexpected-native-binary",
+        "version": 1
+      },
+      {
+        "id": "symlink-escapes-root",
+        "version": 1
+      },
+      {
+        "id": "install-script-added",
+        "version": 1
+      },
+      {
+        "id": "install-script-changed",
+        "version": 1
+      },
+      {
+        "id": "install-script-present",
+        "version": 1
+      },
+      {
+        "id": "install-script-fetches-code",
+        "version": 1
+      },
+      {
+        "id": "install-script-runs-unsourced-file",
+        "version": 1
+      },
+      {
+        "id": "install-script-runs-risky-file",
+        "version": 1
+      },
+      {
+        "id": "integrity-mismatch",
+        "version": 1
+      },
+      {
+        "id": "package-identity-mismatch",
+        "version": 1
+      }
+    ],
+    "filesScanned": 6,
+    "filesNotApplicable": 1,
     "filesSkipped": [],
     "filesSkippedCount": 0,
     "capabilityDifferential": {
-      "available": false,
-      "basis": null
+      "available": true,
+      "basis": "Behavior in the package was compared with 7 code file(s) of the resolved source snapshot; 0 test or tooling file(s) were not counted."
     }
   },
   "ai": {

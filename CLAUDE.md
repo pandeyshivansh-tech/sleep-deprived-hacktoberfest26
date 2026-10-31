@@ -15,7 +15,7 @@ Built by team Sleep Deprived for Hacktoberfest 2026 Hack Day Sonipat, Problem 04
 and judging rules are in the organizers' PDFs, not in this repo. The relevant
 points are summarized under **Hackathon rules** below.
 
-## Status: M0 and M1 exist
+## Status: M0, M1 and M2 exist
 
 Implemented, M0 (merged in PR #1):
 - npm workspaces `server/` (Express 5, ES modules) and `web/` (React 19 + Vite 8)
@@ -33,23 +33,36 @@ Implemented, M1 (deterministic npm analysis; CLI only):
 - Bounded in-memory tar.gz reading, SHA-256 inventory, file diff
   (identical / modified / package-only / source-only), `package.json` diff
 - Report contract v0.3.0 output, real `examples/`
-- Every report is `scan.performed: false`, `verdict: "inconclusive"`,
-  `riskScore: null`, differences `unclassified`, `ai.status: "skipped"`: no
-  scanner exists yet, and the report says so explicitly
 
-**Not implemented yet:** the build-artifact explainer, security scanning, risk
-scores, any model inference, an analysis API route, any analysis UI, release
-monitoring, PyPI, non-GitHub sources, verification of npm provenance
-attestations (presence is reported, never verified). Never describe these as
-working, in code comments, the README, UI copy or PR descriptions. UI text must
-not pretend a feature works. The current page explicitly says analysis is not
-available yet.
+Implemented, M2 (deterministic scanner; see `docs/risk-model.md`):
+- `server/src/scan/`: pattern-based scanner over the published files (text, never
+  executed), 22 rule ids (install scripts, dynamic and decoded execution, process
+  execution, credentials + network, obfuscation, network hooks near wallet code,
+  hard-coded endpoints, native binaries, escaping links, text aimed at AI models,
+  integrity/identity mismatch), the capability differential against the source,
+  and a documented risk score with a per-finding breakdown and a verdict decision
+  table
+- Reports now have `scan.performed: true`, findings with evidence, a score and
+  one of `no-differences`, `needs-review`, `suspicious`, `inconclusive`
+- Differences are still `unclassified` and `ai.status` is `skipped`: no explainer
+  and no model inference exist yet. A package that differs from its source is
+  therefore `needs-review` at best, even when nothing looks risky.
+
+**Not implemented yet:** the build-artifact explainer (M2b: Problem 04 requires
+it, and without it `expected-differences` is unreachable), any model inference,
+an analysis API route, any analysis UI, release monitoring, PyPI, non-GitHub
+sources, verification of npm provenance attestations (presence is reported, never
+verified). Never describe these as working, in code comments, the README, UI copy
+or PR descriptions, and never claim full Problem 04 coverage without the
+explainer. UI text must not pretend a feature works. The current page explicitly
+says analysis is not available yet. The scanner is heuristic: never describe a
+low score or an empty findings list as "safe".
 
 Planned milestones (each one is its own PR):
-- M2: deterministic scanner rules, a capability differential (behavior present
-  in the package but absent from the source), an evidence-based build-artifact
-  explainer, risk score. This also replaces `unclassified` and the null score,
-  so it must update the examples and `server/test/examples.test.js`
+- M2b: an evidence-based build-artifact explainer (entry points, build config,
+  source maps whose `sourcesContent` matches the repo; no hard-coded allowlist).
+  It replaces `unclassified`, makes `expected-differences` reachable, and must
+  update the examples and `server/test/examples.test.js`
 - M3: analysis dashboard built against `docs/report.sample.json`
 - M4: Gemma, then DeepSeek, through local Ollama
 - M5: async job API, local `.tgz` upload (organizers evaluate with tampered
@@ -73,7 +86,9 @@ server/src/source/           repository.js (repo URL parsing), resolve.js (gitHe
 server/src/archive/          tar.js (bounded tar.gz reader), inventory.js (SHA-256 inventory)
 server/src/compare/          diff.js (file diff), manifest.js (package.json diff)
 server/src/analyze.js        analyzeNpmPackage(): the pipeline -> { report, analysis }
-server/src/report/           schema.js (enums, validateReport), build.js, summary.js (text)
+server/src/scan/             index.js (scanPackage), indicators.js (every pattern, one table), rules/ (code-patterns.js, structure.js), finding.js, risk.js + weights.js (score, verdict), categorize.js, text.js
+server/src/report/           schema.js (enums, validateReport), build.js (numbers, links and scores findings), summary.js (text)
+server/scripts/scan-corpus.mjs  acceptance run over benign packages (needs network; not in CI)
 server/src/cli.js            run(argv, io): the CLI; server/bin/audyssey.js is the entry
 server/test/*.test.js        node:test suites (every file in test/ is run as a test)
 server/test-support/         test helpers: fake-fetch, tar-builder (hostile archives), scenario
@@ -81,6 +96,7 @@ web/src/App.jsx              status page (fetches /api/health)
 web/src/lib/health.js        describeHealth(): pure view-model, unit tested
 web/test/*.test.js           node:test suites for web/src/lib
 docs/report-schema.md        report contract v0.3.0 (source of truth)
+docs/risk-model.md           scanner rules, weights and why, verdict table, measured results, limits
 docs/report.sample.json      hand-written, fictional sample; not real output
 examples/                    REAL tool output: debug@4.4.1, mitt@3.0.1, tampered-demo
 ```
@@ -95,6 +111,7 @@ Requires Node.js >= 22.12. CI uses Node 24 (`.nvmrc`).
 | All tests | `npm test` (runs `node --test` in each workspace) |
 | Frontend build | `npm run build` |
 | Analyze a package | `npm run analyze -- name@1.2.3` (needs network; `--json`, `--out <file>`, `--tarball <file>`) |
+| Scanner acceptance run | `node server/scripts/scan-corpus.mjs [name@x.y.z ...]` (needs network; run it after any rule or weight change) |
 | API server | `npm run dev:server` serves `http://127.0.0.1:8787` with `--watch` (`npm start` runs it without) |
 | Dashboard | `npm run dev:web` serves `http://127.0.0.1:5173` and proxies `/api` to 8787 |
 
@@ -203,6 +220,12 @@ output are **untrusted input**.
   metadata-supplied URLs as untrusted, and re-check hosts on redirects.
 - Subprocesses (for example `git ls-remote`) only with fixed argument arrays,
   never through a shell.
+- Scanning: the scanner only matches text. It never executes, `eval`s, imports or
+  `vm`-runs anything from a package, and snippets quoted from a package are
+  sanitized (control characters, bidirectional overrides) before they are stored or
+  printed. Never suppress matches because they look like they sit inside a string
+  or comment unless the masking is conservative (`text.js`): an attacker controls
+  the file.
 - Prompt injection: put untrusted text inside clearly delimited blocks, never
   let model output change deterministic results, and treat text aimed at an
   LLM inside a package as a finding.
@@ -239,8 +262,15 @@ output are **untrusted input**.
 - `server/test/examples.test.js` keeps `examples/` contract-valid,
   tool-generated and tied to the tarball committed beside it. Regenerate
   examples with the tool; never edit them by hand.
-- Each scanner rule needs a positive and a negative fixture. AI handling needs
-  tests for malformed output, invented IDs and injection text.
+- Each scanner rule needs a positive and a negative fixture
+  (`server/test/scan-rules.test.js`). Regex patterns run on attacker-controlled
+  text: no nested quantifiers, and every new pattern needs a hostile-input case in
+  `scan-robustness.test.js`. A weight or rule change must be followed by the
+  corpus run (zero high findings on benign packages), a bump of `MODEL` /
+  `RULES_VERSION`, `docs/risk-model.md` and regenerated examples. Attack fixtures
+  are inert, defanged text that is scanned and never run
+  (`scan-incidents.test.js`); do not commit real malware.
+- AI handling needs tests for malformed output, invented IDs and injection text.
 
 ## Git and PR workflow
 

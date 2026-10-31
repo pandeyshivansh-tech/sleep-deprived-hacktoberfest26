@@ -7,11 +7,13 @@ import { validateSpec } from './ecosystems/npm/spec.js';
 import { ArchiveError, InputError } from './errors.js';
 import { DEFAULT_LIMITS } from './limits.js';
 import { buildReport } from './report/build.js';
+import { retainPackageFile } from './scan/categorize.js';
+import { scanPackage } from './scan/index.js';
 import { resolveSource } from './source/resolve.js';
 
 async function inspectArchive(bytes, limits) {
   const parsed = await readTarGz(bytes, limits);
-  return buildInventory(parsed, { limits });
+  return buildInventory(parsed, { limits, retain: retainPackageFile });
 }
 
 function manifestOf(inventory) {
@@ -70,15 +72,6 @@ export async function analyzeNpmPackage({
   }
 
   const integrity = checkIntegrity(metadata, bytes);
-  if (!integrity.verified) {
-    errors.push({
-      stage: 'integrity',
-      message: integrity.expected
-        ? 'The tarball does not match the checksum the npm registry publishes for this version.'
-        : 'The npm registry publishes no checksum for this version, so the tarball could not be verified.',
-    });
-  }
-  for (const note of integrity.notes) if (integrity.verified) errors.push({ stage: 'integrity', message: note });
 
   let packageInventory = suppliedInventory;
   if (!tarballBytes) {
@@ -93,17 +86,26 @@ export async function analyzeNpmPackage({
     errors.push({ stage: 'package-archive', message: `The supplied tarball was rejected: ${suppliedError.message}` });
   }
 
-  const publishedManifest = manifestOf(packageInventory);
-  if (packageInventory) {
-    if (publishedManifest.error) {
-      errors.push({ stage: 'package-manifest', message: `The tarball's ${publishedManifest.error}.` });
-    } else if (publishedManifest.manifest.name !== name || publishedManifest.manifest.version !== version) {
-      errors.push({
-        stage: 'package-manifest',
-        message: `The tarball's package.json says ${publishedManifest.manifest.name}@${publishedManifest.manifest.version}, not ${name}@${version}.`,
-      });
-    }
+  // A checksum mismatch and a tarball that names another package are findings when
+  // the scanner runs (it only runs on a readable archive). Otherwise, or when the
+  // registry published no checksum to compare with, they are listed here.
+  if (!integrity.verified && (!packageInventory || !integrity.expected)) {
+    errors.push({
+      stage: 'integrity',
+      message: integrity.expected
+        ? 'The tarball does not match the checksum the npm registry publishes for this version.'
+        : 'The npm registry publishes no checksum for this version, so the tarball could not be verified.',
+    });
   }
+  for (const note of integrity.notes) if (integrity.verified) errors.push({ stage: 'integrity', message: note });
+
+  const publishedManifest = manifestOf(packageInventory);
+  if (packageInventory && publishedManifest.error) {
+    errors.push({ stage: 'package-manifest', message: `The tarball's ${publishedManifest.error}.` });
+  }
+  const identity = publishedManifest.manifest
+    ? { expected: { name, version }, actual: { name: publishedManifest.manifest.name, version: publishedManifest.manifest.version } }
+    : null;
 
   let source;
   if (packageInventory) {
@@ -143,8 +145,28 @@ export async function analyzeNpmPackage({
     };
   }
 
+  const input = { ecosystem: 'npm', name, version, source: tarballBytes ? 'tarball' : 'registry' };
+
+  // The scanner needs a readable package. It never executes or installs anything.
+  let scanResult = null;
+  if (packageInventory) {
+    onProgress('Scanning the published files');
+    scanResult = scanPackage({
+      packageInventory,
+      sourceInventory: source.inventory,
+      sourceResolved: source.resolved,
+      comparison,
+      manifest,
+      integrity,
+      identity,
+      input,
+      publishedManifest: publishedManifest.manifest ?? null,
+      directory: source.directory,
+    });
+  }
+
   const report = buildReport({
-    input: { ecosystem: 'npm', name, version, source: tarballBytes ? 'tarball' : 'registry' },
+    input,
     metadata,
     tarballUrl,
     integrity,
@@ -152,12 +174,13 @@ export async function analyzeNpmPackage({
     source,
     comparison,
     manifest,
+    scanResult,
     errors,
     now,
   });
 
   return {
     report,
-    analysis: { metadata, packageInventory, sourceInventory: source.inventory, comparison, manifest },
+    analysis: { metadata, packageInventory, sourceInventory: source.inventory, comparison, manifest, scanResult },
   };
 }

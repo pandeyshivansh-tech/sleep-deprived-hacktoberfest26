@@ -57,19 +57,29 @@ test('compares a published package with its exact-commit source and reports ever
   assert.match(files['package.json'].explanation.evidence.join(' '), /differs in 1 field\(s\): gitHead/);
 });
 
-test('makes no security or classification judgement it cannot back', async () => {
+test('scans the published files but does not explain or classify differences', async () => {
   const { report } = await run(legitimate());
-  assert.equal(report.summary.verdict, 'inconclusive');
-  assert.equal(report.summary.riskScore, null);
-  assert.equal(report.summary.scoring, null);
-  assert.equal(report.scan.performed, false, 'the report says outright that nothing was scanned');
-  assert.deepEqual(report.findings, []);
+  assert.equal(report.scan.performed, true);
+  assert.ok(Number.isInteger(report.summary.riskScore));
+  assert.equal(report.summary.scoring.model, 'audyssey-risk-v1');
+  assert.deepEqual(report.findings.filter((f) => f.severity !== 'info'), [], 'an ordinary built package has nothing to report');
+  assert.equal(report.summary.verdict, 'needs-review', 'differences exist and nothing can explain them yet');
   assert.deepEqual(report.ai, { status: 'skipped', runs: [], classifications: [], investigations: [] });
   for (const file of report.files.filter((f) => f.status !== 'identical')) {
     assert.equal(file.explanation.category, 'unclassified', file.path);
     assert.equal(file.explanation.confidence, 'low');
-    assert.match(file.explanation.evidence.join(' '), /No build-artifact analysis or security scan/);
+    assert.match(file.explanation.evidence.join(' '), /No build-artifact analysis has judged this difference/);
   }
+});
+
+test('a package that matches its source and has nothing to report has no differences', async () => {
+  const same = { 'package.json': manifest(), 'index.js': 'module.exports = 1;\n', 'README.md': '# demo\n' };
+  const { report } = await run(makeScenario({ packageFiles: same, sourceFiles: { ...same, 'test/a.test.js': 'test()' } }));
+  assert.equal(report.summary.verdict, 'no-differences');
+  assert.equal(report.summary.riskScore, 0);
+  assert.deepEqual(report.findings, []);
+  assert.equal(report.scan.filesSkippedCount, 0);
+  assert.equal(report.scan.capabilityDifferential.available, true);
 });
 
 test('is deterministic: the same inputs give the same report', async () => {
@@ -88,7 +98,7 @@ test('requests only the registry metadata, the tarball and the source archive', 
   ]);
 });
 
-test('surfaces a tampered release: added install script and a file with no source counterpart', async () => {
+test('surfaces a tampered release: an added install script that runs a file with no source counterpart', async () => {
   const scenario = makeScenario({
     packageFiles: {
       'package.json': manifest({ scripts: { test: 'jest', postinstall: 'node lib/x.min.js' } }),
@@ -106,11 +116,56 @@ test('surfaces a tampered release: added install script and a file with no sourc
     { field: 'scripts.postinstall', change: 'added', packageValue: 'node lib/x.min.js', sourceValue: null },
   ]);
   assert.deepEqual(report.manifest.installScripts, { package: { postinstall: 'node lib/x.min.js' }, source: {} });
+
+  const byRule = Object.fromEntries(report.findings.map((f) => [f.ruleId, f]));
+  assert.equal(byRule['install-script-added'].severity, 'high');
+  assert.equal(byRule['install-script-added'].fileId, files['package.json'].id);
+  assert.equal(byRule['install-script-runs-unsourced-file'].severity, 'medium');
+  assert.deepEqual(files['package.json'].findingIds, report.findings.map((f) => f.id), 'findings are linked to the file');
   assert.match(files['package.json'].explanation.evidence.join('\n'), /install-time script "postinstall"/);
-  assert.equal(report.summary.verdict, 'inconclusive', 'M1 does not judge: it only surfaces evidence');
+  assert.equal(report.summary.verdict, 'needs-review', 'one strong rule is never enough for suspicious');
+  assert.equal(report.summary.riskScore, 38, 'high 30 + medium 12 x 0.7 confidence = 38.4');
 });
 
-test('reports a tarball that does not match the registry checksum, and keeps analyzing', async () => {
+test('a release that adds an install script AND does not match its checksum is suspicious', async () => {
+  const good = makeNpmTarball({ 'package.json': manifest(), 'index.js': 'ok' });
+  const tampered = makeNpmTarball({ 'package.json': manifest({ scripts: { postinstall: 'node lib/setup.js' } }), 'index.js': 'ok', 'lib/setup.js': 'x' });
+  const scenario = makeScenario({
+    packageTarball: good,
+    sourceFiles: { 'package.json': manifest(), 'index.js': 'ok' },
+  });
+  const { report } = await analyzeNpmPackage({ tarballBytes: tampered, fetchImpl: scenario.fetchImpl, now: FIXED_NOW });
+  const rules = report.findings.map((f) => f.ruleId);
+  assert.ok(rules.includes('integrity-mismatch') && rules.includes('install-script-added'));
+  assert.equal(report.summary.verdict, 'suspicious');
+  assert.ok(report.summary.riskScore >= 60);
+  assert.deepEqual(validateReport(report), []);
+});
+
+test('findings are numbered strongest first, and the order does not depend on the scan order', async () => {
+  const { report } = await run(
+    makeScenario({
+      packageFiles: { 'package.json': manifest(), 'a.js': 'eval(x)', 'b.js': 'const t=process.env.NPM_TOKEN; fetch("https://x.test")' },
+      sourceFiles: { 'package.json': manifest(), 'src/index.js': 'ok' },
+    }),
+  );
+  assert.deepEqual(report.findings.map((f) => f.id), report.findings.map((_, i) => `F${i + 1}`));
+  const severities = ['critical', 'high', 'medium', 'low', 'info'];
+  const ranks = report.findings.map((f) => severities.indexOf(f.severity));
+  assert.deepEqual([...ranks].sort((a, b) => a - b), ranks);
+  assert.equal(report.findings[0].ruleId, 'credential-network-combination');
+});
+
+test('a very large number of findings is capped, and the report says so', async () => {
+  const packageFiles = { 'package.json': manifest() };
+  for (let i = 0; i < 260; i += 1) packageFiles[`m${String(i).padStart(3, '0')}.js`] = `function f${i}(x) { return eval(x); }`;
+  const { report } = await run(makeScenario({ packageFiles, sourceFiles: { 'package.json': manifest(), 'src/index.js': 'ok' } }));
+  assert.equal(report.findings.length, 200);
+  assert.ok(report.errors.some((e) => e.stage === 'scan' && /60 lower-ranked finding\(s\) were left out/.test(e.message)));
+  assert.deepEqual(validateReport(report), []);
+});
+
+test('reports a tarball that does not match the registry checksum as a finding, and keeps analyzing', async () => {
   const good = makeNpmTarball({ 'package.json': manifest(), 'index.js': 'ok' });
   const scenario = makeScenario({
     packageTarball: makeNpmTarball({ 'package.json': manifest(), 'index.js': 'ok', 'evil.js': 'x' }),
@@ -120,7 +175,11 @@ test('reports a tarball that does not match the registry checksum, and keeps ana
   const { report } = await run(scenario);
   assert.equal(report.package.integrity.verified, false);
   assert.notEqual(report.package.integrity.expected, report.package.integrity.actual);
-  assert.ok(report.errors.some((e) => e.stage === 'integrity' && /does not match the checksum/.test(e.message)));
+  const finding = report.findings.find((f) => f.ruleId === 'integrity-mismatch');
+  assert.equal(finding.scope, 'package');
+  assert.equal(finding.fileId, null);
+  assert.equal(finding.confidence, 'medium', 'for a registry download it may be a corrupt transfer');
+  assert.deepEqual(report.errors, [], 'the same fact is not also listed as a problem');
   assert.equal(byPath(report)['evil.js'].status, 'package-only');
 });
 
@@ -138,21 +197,33 @@ test('falls back to a version tag and says the source is less certain', async ()
 });
 
 test('an unresolved source is inconclusive, and nothing is called identical', async () => {
+  const scenario = makeScenario({ gitHead: null, packageFiles: { 'package.json': manifest(), 'x.js': 'x' }, sourceFiles: null });
+  const { report } = await run(scenario);
+  assert.equal(report.source.resolved, false);
+  assert.equal(report.source.confidence, 'unresolved');
+  assert.equal(report.summary.verdict, 'inconclusive');
+  assert.equal(report.scan.performed, true, 'the files are still scanned');
+  assert.equal(report.scan.capabilityDifferential.available, false);
+  assert.deepEqual(report.summary.counts, { identical: 0, modified: 0, packageOnly: 2, sourceOnly: 0 });
+  assert.ok(report.files.every((f) => f.explanation.category === 'unclassified'));
+  assert.match(report.files[0].explanation.evidence[0], /could not be compared/);
+  assert.equal(report.manifest.compared, false);
+  assert.match(report.manifest.reason, /No source snapshot/);
+});
+
+test('an unresolved source with an install script is reviewed, with no claim that the script is new', async () => {
   const scenario = makeScenario({
     gitHead: null,
     packageFiles: { 'package.json': manifest({ scripts: { postinstall: 'node x.js' } }), 'x.js': 'x' },
     sourceFiles: null,
   });
   const { report } = await run(scenario);
-  assert.equal(report.source.resolved, false);
-  assert.equal(report.source.confidence, 'unresolved');
-  assert.equal(report.summary.verdict, 'inconclusive');
-  assert.deepEqual(report.summary.counts, { identical: 0, modified: 0, packageOnly: 2, sourceOnly: 0 });
-  assert.ok(report.files.every((f) => f.explanation.category === 'unclassified'));
-  assert.match(report.files[0].explanation.evidence[0], /could not be compared/);
-  assert.equal(report.manifest.compared, false);
-  assert.match(report.manifest.reason, /No source snapshot/);
+  assert.equal(report.summary.verdict, 'needs-review');
   assert.deepEqual(report.manifest.installScripts.package, { postinstall: 'node x.js' });
+  const finding = report.findings.find((f) => f.ruleId === 'install-script-present');
+  assert.equal(finding.severity, 'medium');
+  assert.equal(finding.introducedInPackage, null);
+  assert.ok(!report.findings.some((f) => f.ruleId === 'install-script-added'));
 });
 
 test('a hostile published archive yields an inconclusive report with the reason, not a crash', async () => {
@@ -172,7 +243,11 @@ test('flags a tarball whose package.json is for a different package or version',
     sourceFiles: { 'package.json': manifest() },
   });
   const { report } = await run(scenario);
-  assert.ok(report.errors.some((e) => e.stage === 'package-manifest' && /other-pkg@9\.9\.9, not demo-pkg@1\.0\.0/.test(e.message)));
+  const finding = report.findings.find((f) => f.ruleId === 'package-identity-mismatch');
+  assert.equal(finding.scope, 'package');
+  assert.equal(finding.severity, 'high');
+  assert.match(finding.evidence[0].snippet, /requested demo-pkg@1\.0\.0, tarball says other-pkg@9\.9\.9/);
+  assert.deepEqual(report.errors, []);
 });
 
 test('never executes code or install scripts from the package', async () => {
@@ -201,8 +276,9 @@ test('an unknown version is an input error', async () => {
 test('reports progress through the callback', async () => {
   const messages = [];
   await run(legitimate(), { onProgress: (m) => messages.push(m) });
-  assert.equal(messages.length, 5);
+  assert.equal(messages.length, 6);
   assert.match(messages[0], /Fetching npm metadata/);
+  assert.match(messages.at(-1), /Scanning the published files/);
 });
 
 test('local tarball: identifies itself, skips the registry download and flags a checksum mismatch', async () => {

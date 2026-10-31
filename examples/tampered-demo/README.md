@@ -31,7 +31,8 @@ node server/bin/audyssey.js analyze --tarball examples/tampered-demo/debug-4.4.1
 - **Integrity not verified.** The tarball's checksum does not match the one the
   registry publishes for `debug@4.4.1` (`package.integrity.verified: false`, and
   an `integrity` entry in `errors`).
-- `package.json` and `src/node.js` are `modified`.
+- `package.json` and `src/node.js` are `modified`. (The `src/node.js` change is one
+  appended comment line; the scanner does not read it as a change in behavior.)
 - `lib/telemetry.min.js` is `package-only`: it exists nowhere in the source.
 - `manifest.changes` contains `scripts.postinstall` as `added`, and
   `manifest.installScripts.package` lists `postinstall`, which the source does
@@ -40,5 +41,16 @@ node server/bin/audyssey.js analyze --tarball examples/tampered-demo/debug-4.4.1
   (`input.source: "tarball"`) and the source was found through the registry's
   recorded commit.
 
-Audyssey does not yet decide that these differences are suspicious. It surfaces
-them as evidence, and the verdict stays `inconclusive`.
+- The scanner reports four findings (the strongest first):
+  `install-script-added` (high), `integrity-mismatch` (high, package scope),
+  `install-script-runs-unsourced-file` (medium: `postinstall` runs
+  `lib/telemetry.min.js`, which the source does not have) and an `info` entry for
+  `src/node.js`, whose environment-listing code is also in the source.
+- **Risk score 68, verdict `suspicious`.** The verdict needs two distinct strong
+  rules, and here the added install script and the checksum mismatch are
+  independent facts. `summary.scoring` in `report.json` shows how each finding
+  contributes.
+
+The added file is inert, so the scanner has nothing to say about its contents:
+the `suspicious` verdict comes from how the package differs from its source and
+from the published checksum, not from any behavior in the file.

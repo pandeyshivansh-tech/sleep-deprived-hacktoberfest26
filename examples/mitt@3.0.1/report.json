@@ -4,7 +4,7 @@
     "name": "audyssey",
     "version": "0.1.0"
   },
-  "generatedAt": "2026-10-31T21:50:58.527Z",
+  "generatedAt": "2026-10-31T22:24:35.367Z",
   "input": {
     "ecosystem": "npm",
     "name": "mitt",
@@ -45,9 +45,14 @@
     ]
   },
   "summary": {
-    "verdict": "inconclusive",
-    "riskScore": null,
-    "scoring": null,
+    "verdict": "needs-review",
+    "riskScore": 0,
+    "scoring": {
+      "model": "audyssey-risk-v1",
+      "cap": 100,
+      "rawTotal": 0,
+      "contributions": []
+    },
     "counts": {
       "identical": 3,
       "modified": 0,
@@ -78,7 +83,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -98,7 +103,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -118,7 +123,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -138,7 +143,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -158,7 +163,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -224,7 +229,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -244,7 +249,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -264,7 +269,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -284,7 +289,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -304,7 +309,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -324,7 +329,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -344,7 +349,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -387,7 +392,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -407,7 +412,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -427,7 +432,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -447,7 +452,7 @@
         "confidence": "low",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis or security scan has judged this difference."
+          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
         ]
       },
       "findingIds": []
@@ -464,16 +469,105 @@
     }
   },
   "scan": {
-    "performed": false,
-    "rulesVersion": null,
-    "rules": [],
-    "filesScanned": 0,
-    "filesNotApplicable": 0,
+    "performed": true,
+    "rulesVersion": "m2-1",
+    "rules": [
+      {
+        "id": "dynamic-code-execution",
+        "version": 1
+      },
+      {
+        "id": "decoded-code-execution",
+        "version": 1
+      },
+      {
+        "id": "process-execution",
+        "version": 1
+      },
+      {
+        "id": "network-access",
+        "version": 1
+      },
+      {
+        "id": "hardcoded-endpoint",
+        "version": 1
+      },
+      {
+        "id": "sensitive-env-access",
+        "version": 1
+      },
+      {
+        "id": "sensitive-file-access",
+        "version": 1
+      },
+      {
+        "id": "credential-network-combination",
+        "version": 1
+      },
+      {
+        "id": "obfuscated-code",
+        "version": 1
+      },
+      {
+        "id": "network-hook-wallet-swap",
+        "version": 1
+      },
+      {
+        "id": "global-network-hook",
+        "version": 1
+      },
+      {
+        "id": "llm-directed-text",
+        "version": 1
+      },
+      {
+        "id": "unexpected-native-binary",
+        "version": 1
+      },
+      {
+        "id": "symlink-escapes-root",
+        "version": 1
+      },
+      {
+        "id": "install-script-added",
+        "version": 1
+      },
+      {
+        "id": "install-script-changed",
+        "version": 1
+      },
+      {
+        "id": "install-script-present",
+        "version": 1
+      },
+      {
+        "id": "install-script-fetches-code",
+        "version": 1
+      },
+      {
+        "id": "install-script-runs-unsourced-file",
+        "version": 1
+      },
+      {
+        "id": "install-script-runs-risky-file",
+        "version": 1
+      },
+      {
+        "id": "integrity-mismatch",
+        "version": 1
+      },
+      {
+        "id": "package-identity-mismatch",
+        "version": 1
+      }
+    ],
+    "filesScanned": 6,
+    "filesNotApplicable": 4,
     "filesSkipped": [],
     "filesSkippedCount": 0,
     "capabilityDifferential": {
-      "available": false,
-      "basis": null
+      "available": true,
+      "basis": "Behavior in the package was compared with 1 code file(s) of the resolved source snapshot; 2 test or tooling file(s) were not counted."
     }
   },
   "ai": {

@@ -27,5 +27,11 @@ Files:      3 identical, 0 modified, 7 package-only, 9 source-only
 package.json: 0 field(s) differ between the published package and the source
 Install-time scripts in the published package: none
 
-Verdict:    inconclusive
-Security assessment: not performed. This build compares files and metadata only. It does not judge whether a difference is expected or suspicious.
+Scan:       6 file(s) scanned, 0 skipped, 4 not applicable
+            - comparison with the source: Behavior in the package was compared with 1 code file(s) of the resolved source snapshot; 2 test or tooling file(s) were not counted.
+
+Findings:   none
+
+Risk score: 0/100 (audyssey-risk-v1; the breakdown is in the JSON report)
+Verdict:    needs-review
+The scan matches patterns in text. It can miss obfuscated or dynamically built code and can match code that never runs, so a low score does not mean a package is safe.

@@ -1,6 +1,7 @@
 import { buildInventory } from '../archive/inventory.js';
 import { readTarGz } from '../archive/tar.js';
 import { parseManifest } from '../compare/manifest.js';
+import { retainSourceFile } from '../scan/categorize.js';
 import { ArchiveError, FetchError } from '../errors.js';
 import { safeFetchBuffer } from '../net/safe-fetch.js';
 import { parseRepository } from './repository.js';
@@ -72,7 +73,7 @@ export async function resolveSource({ metadata, name, version, fetchImpl = fetch
     let inventory;
     try {
       parsed = await readTarGz(bytes, limits.source);
-      inventory = buildInventory(parsed, { directory: repo.directory, limits: limits.source });
+      inventory = buildInventory(parsed, { directory: repo.directory, limits: limits.source, retain: retainSourceFile });
     } catch (error) {
       if (error instanceof ArchiveError) {
         return unresolved({ ...where, notes: [...attempts, `The source archive for ${label} was rejected: ${error.message}`] });
