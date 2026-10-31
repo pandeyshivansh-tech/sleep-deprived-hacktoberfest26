@@ -1,16 +1,20 @@
 // Enumerations and consistency checks for the report contract described in
 // docs/report-schema.md.
 
-export const SCHEMA_VERSION = '0.1.0';
+export const SCHEMA_VERSION = '0.2.0';
 
 export const FILE_STATUSES = Object.freeze(['identical', 'modified', 'package-only', 'source-only']);
+export const FILE_ENTRY_TYPES = Object.freeze(['file', 'symlink', 'hardlink']);
 export const EXPLANATION_CATEGORIES = Object.freeze([
   'identical',
   'generated-artifact',
   'publish-normalization',
   'not-published',
   'unexplained',
+  // The difference is reported by hash only: no explainer or scanner has judged it.
+  'unclassified',
 ]);
+export const MANIFEST_CHANGES = Object.freeze(['added', 'removed', 'changed']);
 export const SEVERITIES = Object.freeze(['info', 'low', 'medium', 'high', 'critical']);
 export const CONFIDENCES = Object.freeze(['high', 'medium', 'low']);
 export const VERDICTS = Object.freeze(['no-differences', 'expected-differences', 'needs-review', 'suspicious', 'inconclusive']);
@@ -47,7 +51,7 @@ export function validateReport(report) {
   if (report.schemaVersion !== SCHEMA_VERSION) {
     errors.push(`schemaVersion must be ${SCHEMA_VERSION} (got ${JSON.stringify(report.schemaVersion)})`);
   }
-  for (const key of ['tool', 'input', 'package', 'source', 'summary', 'ai']) {
+  for (const key of ['tool', 'input', 'package', 'source', 'summary', 'manifest', 'ai']) {
     if (report[key] === null || typeof report[key] !== 'object') errors.push(`${key} must be an object`);
   }
   for (const key of ['files', 'findings', 'errors']) {
@@ -59,9 +63,32 @@ export function validateReport(report) {
   checkEnum(errors, 'source.confidence', report.source.confidence, SOURCE_CONFIDENCES);
   checkEnum(errors, 'source.ref.type', report.source.ref?.type, SOURCE_REF_TYPES);
   checkEnum(errors, 'summary.verdict', report.summary.verdict, VERDICTS);
+  // A null score means "no security assessment was performed". Any other
+  // verdict must be backed by a number, so a score is never invented.
   const score = report.summary.riskScore;
-  if (!Number.isInteger(score) || score < 0 || score > 100) {
-    errors.push(`summary.riskScore must be an integer from 0 to 100 (got ${JSON.stringify(score)})`);
+  if (score === null) {
+    if (report.summary.verdict !== 'inconclusive') {
+      errors.push('summary.riskScore may be null only when summary.verdict is inconclusive');
+    }
+  } else if (!Number.isInteger(score) || score < 0 || score > 100) {
+    errors.push(`summary.riskScore must be null or an integer from 0 to 100 (got ${JSON.stringify(score)})`);
+  }
+
+  const { manifest } = report;
+  if (typeof manifest.compared !== 'boolean') errors.push('manifest.compared must be a boolean');
+  if (!Array.isArray(manifest.changes)) {
+    errors.push('manifest.changes must be an array');
+  } else {
+    for (const [index, change] of manifest.changes.entries()) {
+      if (typeof change?.field !== 'string' || change.field === '') errors.push(`manifest.changes[${index}].field must be a non-empty string`);
+      checkEnum(errors, `manifest.changes[${index}].change`, change?.change, MANIFEST_CHANGES);
+    }
+  }
+  for (const side of ['package', 'source']) {
+    const scripts = manifest.installScripts?.[side];
+    if (scripts === null || typeof scripts !== 'object' || Array.isArray(scripts)) {
+      errors.push(`manifest.installScripts.${side} must be an object`);
+    }
   }
 
   const fileIds = new Set();
@@ -74,6 +101,11 @@ export function validateReport(report) {
     checkEnum(errors, `${where}.explanation.category`, file.explanation?.category, EXPLANATION_CATEGORIES);
     checkEnum(errors, `${where}.explanation.confidence`, file.explanation?.confidence, CONFIDENCES);
     if (STATUS_COUNT_KEYS[file.status]) statusCounts[STATUS_COUNT_KEYS[file.status]] += 1;
+    for (const side of ['package', 'source']) {
+      if (file[side] && file[side].type !== undefined) {
+        checkEnum(errors, `${where}.${side}.type`, file[side].type, FILE_ENTRY_TYPES);
+      }
+    }
 
     const hasPackage = file.package !== null;
     const hasSource = file.source !== null;

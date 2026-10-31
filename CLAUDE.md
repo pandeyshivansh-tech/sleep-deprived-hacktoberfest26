@@ -58,7 +58,7 @@ server/test/*.test.js        node:test suites
 web/src/App.jsx              status page (fetches /api/health)
 web/src/lib/health.js        describeHealth(): pure view-model, unit tested
 web/test/*.test.js           node:test suites for web/src/lib
-docs/report-schema.md        report contract v0.1.0 (source of truth)
+docs/report-schema.md        report contract v0.2.0 (source of truth)
 docs/report.sample.json      hand-written, fictional sample; not real output
 examples/                    reserved for REAL inputs/outputs (README only for now)
 ```
