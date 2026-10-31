@@ -15,7 +15,7 @@ Built by team Sleep Deprived for Hacktoberfest 2026 Hack Day Sonipat, Problem 04
 and judging rules are in the organizers' PDFs, not in this repo. The relevant
 points are summarized under **Hackathon rules** below.
 
-## Status: M0, M1, M2, M2b, M3, M4, M5 and M6 (docs) exist
+## Status: M0, M1, M2, M2b, M3, M4, M5 and M6 (docs) and M7 (watch) exist
 
 Implemented, M0 (merged in PR #1):
 - npm workspaces `server/` (Express 5, ES modules) and `web/` (React 19 + Vite 8)
@@ -76,6 +76,12 @@ Implemented, M3 (report dashboard, `web/`):
   No `dangerouslySetInnerHTML`; package text is rendered as text; only https
   GitHub repository URLs become links. No new dependencies; transitions are CSS.
 
+Implemented, M7 (release watch; `server/src/watch.js`, CLI `watch <name>`): polls the
+registry's `latest` for one package (`--interval` 60..86400 s, `--since`, `--once`,
+`--ai`, `--json`), analyzes each newer version once per session through the unchanged
+`analyzeNpmPackage`, and stops cleanly on SIGINT/SIGTERM. Foreground only: no state
+kept, no notifications, no API route, no dashboard view.
+
 Implemented, M6 (release readiness, docs only): judge-facing README, `docs/DEMO.md`,
 and the three reproducible demo scenarios (clean, tampered, invalid) under `examples/`.
 No analysis behavior changed.
@@ -98,7 +104,7 @@ Implemented, M4 (local models; see `docs/ai-analysis.md`):
   to `ai.status: unavailable | partial | failed` with the deterministic report
   intact. Real inference was run and recorded in `examples/`.
 
-**Not implemented yet:** analysis by package name from the API or UI (only uploaded `.tgz` files), job persistence or cancellation, authentication, release monitoring, PyPI, non-GitHub
+**Not implemented yet:** analysis by package name from the API or UI (only uploaded `.tgz` files), job persistence or cancellation, authentication, a background release-monitoring service, PyPI, non-GitHub
 sources, verification of npm provenance attestations (presence is reported, never
 verified). Never describe these as working, in code comments, the README, UI copy
 or PR descriptions. UI text must not pretend a feature works. The scanner is heuristic: never describe a
@@ -107,7 +113,6 @@ low score or an empty findings list as "safe".
 Planned milestones (each one is its own PR):
 - M2b (done): the evidence-based build-artifact explainer above
 - M5 (done): async job API and `.tgz` upload
-- Release-monitoring `watch` command (not started)
 
 ## Layout
 

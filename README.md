@@ -144,6 +144,22 @@ The version must be exact (`name@1.2.3`, `@scope/name@1.2.3`). Exit codes: `0` r
 produced (even if `inconclusive`), `1` analysis failed (for example a network error),
 `2` invalid input.
 
+## Watch a package for new releases
+
+```bash
+npm run watch -- debug --since 4.4.1 --once
+```
+
+`watch` polls the npm registry's `latest` version of one package and, when a version
+newer than the baseline appears, runs the normal analysis on it and prints the standard
+report (add `--json` for the JSON report, `--ai` for local models). Without `--since`
+the baseline is whatever is latest when you start. Each version is analyzed once per
+session; a failed analysis or registry check is reported and retried at the next poll.
+Options: `--interval <seconds>` (60 to 86400, default 300), `--once` (check once and
+exit), `Ctrl-C` for a clean stop. Limits: it needs internet access, remembers nothing
+after it exits, and only follows the registry's `latest` tag (so a new prerelease on
+another tag is not seen). The CLI command is `node server/bin/audyssey.js watch <name>`.
+
 ## Upload a `.tgz` in the dashboard
 
 1. Start the server and dashboard (above) and open http://127.0.0.1:5173.
@@ -282,7 +298,7 @@ supply-chain attacks, and does not guarantee that a package is safe.
 - Analysis needs internet access. Jobs are in memory (one hour), with no authentication,
   persistence or cancellation. Analysis by package name is CLI only.
 - Local models can be wrong and are slow on modest hardware.
-- Release monitoring (a `watch` command) is not implemented.
+- Release watch is a foreground CLI loop: it polls one package, keeps no state across restarts, sends no notifications and has no dashboard view.
 
 ## Project structure
 
