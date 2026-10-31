@@ -1,5 +1,5 @@
 {
-  "name": "packagelens",
+  "name": "audyssey",
   "version": "0.1.0",
   "description": "Compare published npm packages with their source repositories and explain every difference.",
   "private": true,

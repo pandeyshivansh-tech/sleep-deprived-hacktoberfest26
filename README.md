@@ -1,8 +1,8 @@
-# PackageLens
+# Audyssey
 
 **Know what you're actually installing.**
 
-PackageLens compares a published npm package with the source repository it
+Audyssey compares a published npm package with the source repository it
 claims to come from. It explains every difference, separates normal build
 output from unexpected changes, and flags suspicious modifications with
 evidence.
@@ -136,7 +136,7 @@ build on every pull request.
 server/     Express API and analysis core (ES modules)
 web/        React + Vite dashboard
 docs/       Report contract and an illustrative sample report
-examples/   Real inputs and outputs produced by PackageLens
+examples/   Real inputs and outputs produced by Audyssey
 .github/    CI workflow and pull request template
 ```
 
@@ -154,7 +154,7 @@ examples/   Real inputs and outputs produced by PackageLens
 ## AI-assisted development
 
 Claude Code is used as a development assistant to help write this repository,
-and each pull request discloses it. It is not part of the product: PackageLens
+and each pull request discloses it. It is not part of the product: Audyssey
 uses only the local models listed above.
 
 ## License

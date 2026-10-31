@@ -1,9 +1,9 @@
 # Examples
 
 This directory holds real inputs and the **actual outputs** produced by
-PackageLens. Nothing here is hand-written or edited after generation.
+Audyssey. Nothing here is hand-written or edited after generation.
 
-As of Milestone 0, PackageLens cannot analyze packages yet, so there are no
+As of Milestone 0, Audyssey cannot analyze packages yet, so there are no
 examples. They will be added as analysis features land.
 
 ## Planned layout
@@ -13,8 +13,8 @@ Each example gets its own directory:
 ```
 examples/
   <package>@<version>/
-    input.json     The exact request given to PackageLens
-    report.json    The report PackageLens produced
+    input.json     The exact request given to Audyssey
+    report.json    The report Audyssey produced
     report.md      A human-readable rendering of the same report
     README.md      What the example shows and how to reproduce it
 ```

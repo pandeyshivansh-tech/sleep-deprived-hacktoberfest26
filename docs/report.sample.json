@@ -1,7 +1,7 @@
 {
-  "$comment": "Hand-written illustrative sample of the PackageLens report contract (docs/report-schema.md). It was NOT produced by PackageLens, and the package, repository, hashes and model outputs are fictional.",
+  "$comment": "Hand-written illustrative sample of the Audyssey report contract (docs/report-schema.md). It was NOT produced by Audyssey, and the package, repository, hashes and model outputs are fictional.",
   "schemaVersion": "0.1.0",
-  "tool": { "name": "packagelens", "version": "0.1.0" },
+  "tool": { "name": "audyssey", "version": "0.1.0" },
   "generatedAt": "2026-11-01T00:00:00.000Z",
   "input": { "ecosystem": "npm", "name": "example-pkg", "version": "1.2.0", "source": "registry" },
   "package": {

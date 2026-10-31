@@ -21,7 +21,7 @@ export async function getHealth({ ollamaBaseUrl, fetchImpl, version }) {
 
   return {
     status: 'ok',
-    service: 'packagelens-server',
+    service: 'audyssey-server',
     version,
     ollama: {
       baseUrl: ollamaBaseUrl,

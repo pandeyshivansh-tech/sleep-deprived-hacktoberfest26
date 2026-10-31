@@ -1,4 +1,4 @@
-# PackageLens report contract (v0.1.0)
+# Audyssey report contract (v0.1.0)
 
 This document defines the JSON report that the analysis pipeline, the API, the
 CLI and the dashboard share. The team builds against this contract in
@@ -6,7 +6,7 @@ parallel, so any change to it should come in its own PR.
 
 An illustrative, hand-written instance lives in
 [`report.sample.json`](report.sample.json). It describes a fictional package
-and is **not** output from PackageLens. Real outputs go in `examples/`.
+and is **not** output from Audyssey. Real outputs go in `examples/`.
 
 The enumerations below are also exported from
 [`server/src/report/schema.js`](../server/src/report/schema.js), and

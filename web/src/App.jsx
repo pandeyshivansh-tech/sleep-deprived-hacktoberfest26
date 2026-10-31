@@ -44,7 +44,7 @@ export default function App() {
   return (
     <div className="page">
       <header className="header">
-        <h1 className="brand">PackageLens</h1>
+        <h1 className="brand">Audyssey</h1>
         <p className="tagline">Know what you're actually installing.</p>
       </header>
 

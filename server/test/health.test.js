@@ -107,7 +107,7 @@ test('GET /api/health serves the health report over HTTP', async (t) => {
   assert.equal(response.headers.get('cache-control'), 'no-store');
   assert.equal(response.headers.get('x-powered-by'), null);
   const body = await response.json();
-  assert.equal(body.service, 'packagelens-server');
+  assert.equal(body.service, 'audyssey-server');
   assert.equal(body.ollama.reachable, true);
   assert.deepEqual(body.models.map((m) => m.installed), [true, false]);
 

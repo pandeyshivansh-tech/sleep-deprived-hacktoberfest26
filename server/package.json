@@ -1,7 +1,7 @@
 {
-  "name": "@packagelens/server",
+  "name": "@audyssey/server",
   "version": "0.1.0",
-  "description": "PackageLens API server and analysis core.",
+  "description": "Audyssey API server and analysis core.",
   "private": true,
   "license": "MIT",
   "type": "module",

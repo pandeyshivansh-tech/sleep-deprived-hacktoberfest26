@@ -28,7 +28,7 @@ export function describeHealth({ health, error }) {
   }
   if (error || !health) {
     return {
-      server: { state: 'down', label: 'Cannot reach the PackageLens server', detail: error ?? null },
+      server: { state: 'down', label: 'Cannot reach the Audyssey server', detail: error ?? null },
       ollama: { state: 'unknown', label: 'Unknown', detail: null },
       models: [],
       ai: { ready: false, label: 'Unknown until the server is reachable' },
