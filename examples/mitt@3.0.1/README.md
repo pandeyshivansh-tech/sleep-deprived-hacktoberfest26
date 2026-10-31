@@ -6,7 +6,7 @@
 (the text summary printed by the CLI).
 
 ```bash
-node server/bin/audyssey.js analyze mitt@3.0.1 --out "examples/mitt@3.0.1/report.json" > "examples/mitt@3.0.1/report.txt"
+node server/bin/audyssey.js analyze mitt@3.0.1 --ai --out "examples/mitt@3.0.1/report.json" > "examples/mitt@3.0.1/report.txt"
 ```
 
 ## What happened
@@ -22,6 +22,11 @@ node server/bin/audyssey.js analyze mitt@3.0.1 --out "examples/mitt@3.0.1/report
 - 9 files are `source-only`: `src/index.ts`, the tests, and repository tooling.
 
 - The scanner read the published code and found nothing to report. Risk score 0.
+- Run with `--ai`, **`gemma4:e4b` classified the 7 files that differ** (real
+  output, in the `ai` section): all 7 as `expected-artifact` (CommonJS, ES module
+  and UMD builds, their source maps, and the type declaration). There were no
+  findings, so `deepseek-r1:8b` had nothing to investigate and was not called.
+  This is advisory: it does not change the score or the verdict.
 - The verdict is `needs-review`, not `no-differences`: the build output differs
   from the source and nothing can explain it yet. Once the build-artifact
   explainer exists this package is the case it is meant to settle, by telling

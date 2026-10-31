@@ -23,7 +23,7 @@ python3 -I examples/tampered-demo/make-tampered.py
 ```
 
 ```bash
-node server/bin/audyssey.js analyze --tarball examples/tampered-demo/debug-4.4.1-tampered.tgz --out examples/tampered-demo/report.json > examples/tampered-demo/report.txt
+node server/bin/audyssey.js analyze --tarball examples/tampered-demo/debug-4.4.1-tampered.tgz --ai --out examples/tampered-demo/report.json > examples/tampered-demo/report.txt
 ```
 
 ## What Audyssey reported
@@ -50,6 +50,14 @@ node server/bin/audyssey.js analyze --tarball examples/tampered-demo/debug-4.4.1
   rules, and here the added install script and the checksum mismatch are
   independent facts. `summary.scoring` in `report.json` shows how each finding
   contributes.
+
+- **Local models (real output, `--ai`):** `gemma4:e4b` classified the 3 files that
+  differ (`lib/telemetry.min.js` as suspicious, the other two as needing
+  investigation) and `deepseek-r1:8b` explained the three strongest findings in
+  plain words, each with implications and what remains uncertain. They add
+  explanations under `ai`; they did not change a finding, the score (68) or the
+  verdict. The model said the added file was suspicious partly because its own
+  comment says it simulates tampering, which is true of this demo file.
 
 The added file is inert, so the scanner has nothing to say about its contents:
 the `suspicious` verdict comes from how the package differs from its source and

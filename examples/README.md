@@ -16,11 +16,21 @@ Audyssey retrieves the package and the matching source, compares every file by
 SHA-256, compares `package.json`, checks the registry checksum, and runs a
 deterministic scanner over the published files (see
 [`docs/risk-model.md`](../docs/risk-model.md)). It produces a risk score with a
-per-finding breakdown and a verdict. It does **not** yet:
+per-finding breakdown and a verdict.
 
-- explain whether a difference is a normal build artifact, so every difference is
-  `unclassified` and a package with differences is `needs-review` at best;
-- call the AI models (`ai.status` is `skipped` in every report).
+The `mitt` and `tampered-demo` examples were also run with `--ai`: **real output
+of the two local models** (`gemma4:e4b` classified the files that differ, and for
+the tampered copy `deepseek-r1:8b` explained the strongest findings). That output
+is under `ai` in each `report.json` and `report.txt`, with the model digests and
+durations. It is advisory: the findings, score and verdict above it come only
+from the deterministic scanner, and a model's text is not a finding. Model output
+varies a little between runs; the rest of each report does not. `debug@4.4.1`
+matches its source, so there was nothing to interpret and no model was called.
+
+It does **not** yet explain from evidence whether a difference is a normal build
+artifact, so every difference is `unclassified` and a package with differences is
+`needs-review` at best, even though Gemma calls `mitt`'s build files
+`expected-artifact`. A model's opinion is not an explanation.
 
 The scanner matches patterns in text. It can miss obfuscated or dynamically built
 code and can match code that never runs, so a low score is not a statement that
@@ -28,7 +38,8 @@ a package is safe.
 
 ## Reproducing
 
-From the repository root, after `npm install`. Registry examples need network
+From the repository root, after `npm install`. The `--ai` commands also need Ollama
+running with `gemma4:e4b` and `deepseek-r1:8b` pulled, and take up to a few minutes. Registry examples need network
 access to `registry.npmjs.org` and `codeload.github.com`; published npm
 versions are immutable, so the results are the same except for `generatedAt`.
 
@@ -37,11 +48,11 @@ node server/bin/audyssey.js analyze debug@4.4.1 --out "examples/debug@4.4.1/repo
 ```
 
 ```bash
-node server/bin/audyssey.js analyze mitt@3.0.1 --out "examples/mitt@3.0.1/report.json" > "examples/mitt@3.0.1/report.txt"
+node server/bin/audyssey.js analyze mitt@3.0.1 --ai --out "examples/mitt@3.0.1/report.json" > "examples/mitt@3.0.1/report.txt"
 ```
 
 ```bash
-node server/bin/audyssey.js analyze --tarball examples/tampered-demo/debug-4.4.1-tampered.tgz --out examples/tampered-demo/report.json > examples/tampered-demo/report.txt
+node server/bin/audyssey.js analyze --tarball examples/tampered-demo/debug-4.4.1-tampered.tgz --ai --out examples/tampered-demo/report.json > examples/tampered-demo/report.txt
 ```
 
 The illustrative sample in [`docs/report.sample.json`](../docs/report.sample.json)

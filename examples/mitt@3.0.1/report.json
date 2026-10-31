@@ -4,7 +4,7 @@
     "name": "audyssey",
     "version": "0.1.0"
   },
-  "generatedAt": "2026-10-31T22:24:35.367Z",
+  "generatedAt": "2026-10-31T22:49:55.381Z",
   "input": {
     "ecosystem": "npm",
     "name": "mitt",
@@ -571,9 +571,53 @@
     }
   },
   "ai": {
-    "status": "skipped",
-    "runs": [],
-    "classifications": [],
+    "status": "completed",
+    "runs": [
+      {
+        "stage": "classification",
+        "model": "gemma4:e4b",
+        "digest": "eb2177adf7646d15faead94fdad6d3e170dc8015653418a3b7d5d52a6380be5b",
+        "durationMs": 13659,
+        "status": "completed"
+      }
+    ],
+    "classifications": [
+      {
+        "fileId": "f8",
+        "label": "expected-artifact",
+        "rationale": "This is a CommonJS build output, likely transpiled from source."
+      },
+      {
+        "fileId": "f9",
+        "label": "expected-artifact",
+        "rationale": "This is a source map corresponding to f8."
+      },
+      {
+        "fileId": "f10",
+        "label": "expected-artifact",
+        "rationale": "This is an ES Module build output, likely transpiled from source."
+      },
+      {
+        "fileId": "f11",
+        "label": "expected-artifact",
+        "rationale": "This is a source map corresponding to f10."
+      },
+      {
+        "fileId": "f12",
+        "label": "expected-artifact",
+        "rationale": "This is a UMD build output, which is standard for distribution."
+      },
+      {
+        "fileId": "f13",
+        "label": "expected-artifact",
+        "rationale": "This is a source map corresponding to f12."
+      },
+      {
+        "fileId": "f14",
+        "label": "expected-artifact",
+        "rationale": "This is a TypeScript declaration file, which is expected build output."
+      }
+    ],
     "investigations": []
   },
   "errors": []
