@@ -1,0 +1,25 @@
+Audyssey report for debug@4.4.1 (npm, supplied tarball)
+
+Integrity:  NOT VERIFIED against the registry checksum
+Source:     https://github.com/debug-js/debug @ 33330fa8616b (exact commit recorded by npm)
+            - Resolved the exact commit that npm recorded for this release (gitHead 33330fa8616b).
+            - The source package.json name matches the published package.
+            - The source package.json version matches the published version.
+
+Files:      5 identical, 2 modified, 1 package-only, 6 source-only
+  modified      package.json
+  modified      src/node.js
+  package-only  lib/telemetry.min.js
+  source-only   .editorconfig
+  source-only   .gitignore
+  source-only   .travis.yml
+  source-only   karma.conf.js
+  source-only   test.js
+  source-only   test.node.js
+
+package.json: 1 field(s) differ between the published package and the source
+Install-time scripts in the published package: postinstall
+Problem [integrity]: The tarball does not match the checksum the npm registry publishes for this version.
+
+Verdict:    inconclusive
+Security assessment: not performed. This build compares files and metadata only. It does not judge whether a difference is expected or suspicious.

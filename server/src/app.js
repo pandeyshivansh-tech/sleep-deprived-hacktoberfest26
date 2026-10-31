@@ -1,7 +1,8 @@
 import express from 'express';
 import { getHealth } from './health.js';
+import { VERSION } from './version.js';
 
-export const VERSION = '0.1.0';
+export { VERSION };
 
 export function createApp({ ollamaBaseUrl, fetchImpl = fetch }) {
   const app = express();

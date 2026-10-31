@@ -1,0 +1,364 @@
+{
+  "schemaVersion": "0.2.0",
+  "tool": {
+    "name": "audyssey",
+    "version": "0.1.0"
+  },
+  "generatedAt": "2026-10-31T21:21:57.317Z",
+  "input": {
+    "ecosystem": "npm",
+    "name": "debug",
+    "version": "4.4.1",
+    "source": "registry"
+  },
+  "package": {
+    "name": "debug",
+    "version": "4.4.1",
+    "tarballUrl": "https://registry.npmjs.org/debug/-/debug-4.4.1.tgz",
+    "integrity": {
+      "expected": "sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==",
+      "actual": "sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==",
+      "verified": true
+    },
+    "provenance": {
+      "attestationPresent": false,
+      "claimedRepository": null,
+      "claimedCommit": null
+    },
+    "fileCount": 7,
+    "totalBytes": 42793
+  },
+  "source": {
+    "resolved": true,
+    "repository": "https://github.com/debug-js/debug",
+    "directory": null,
+    "ref": {
+      "type": "gitHead",
+      "value": "33330fa8616b9b33f29f7674747be77266878ba6",
+      "commit": "33330fa8616b9b33f29f7674747be77266878ba6"
+    },
+    "confidence": "exact-commit",
+    "notes": [
+      "Resolved the exact commit that npm recorded for this release (gitHead 33330fa8616b).",
+      "The source package.json name matches the published package.",
+      "The source package.json version matches the published version."
+    ]
+  },
+  "summary": {
+    "verdict": "inconclusive",
+    "riskScore": null,
+    "counts": {
+      "identical": 7,
+      "modified": 0,
+      "packageOnly": 0,
+      "sourceOnly": 6
+    },
+    "findingsBySeverity": {
+      "info": 0,
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "critical": 0
+    }
+  },
+  "files": [
+    {
+      "id": "f1",
+      "path": ".editorconfig",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "b29642bd5cf58c52ccf8c0e07588464c263c94717e584045963711ffd6fb33de",
+        "size": 704,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f2",
+      "path": ".gitignore",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "7692fc629f4b6ffd07ae64b8bb7203c2965251def4810d75656510da787e42f4",
+        "size": 127,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f3",
+      "path": ".travis.yml",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "8c9351aaa9cb78df30df3a268436800b3de8c70d4a3499cab9ec6fc3aafc169c",
+        "size": 166,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f4",
+      "path": "LICENSE",
+      "status": "identical",
+      "package": {
+        "sha256": "3a61c6c96caf5c1d9b623fb9b04c822b783dfcb78aa7e49c76a3f643e6ed7f95",
+        "size": 1139,
+        "type": "file"
+      },
+      "source": {
+        "sha256": "3a61c6c96caf5c1d9b623fb9b04c822b783dfcb78aa7e49c76a3f643e6ed7f95",
+        "size": 1139,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "identical",
+        "confidence": "high",
+        "evidence": [
+          "SHA-256 hashes match."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f5",
+      "path": "README.md",
+      "status": "identical",
+      "package": {
+        "sha256": "486cb669048bd5014adf9ea117e27a45c4e61b0e668f464c724273beb8170797",
+        "size": 22115,
+        "type": "file"
+      },
+      "source": {
+        "sha256": "486cb669048bd5014adf9ea117e27a45c4e61b0e668f464c724273beb8170797",
+        "size": 22115,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "identical",
+        "confidence": "high",
+        "evidence": [
+          "SHA-256 hashes match."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f6",
+      "path": "karma.conf.js",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "a90ec811ef71e382a542cabd0c0afefb28b81198fe580382db589867264cd211",
+        "size": 1434,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f7",
+      "path": "package.json",
+      "status": "identical",
+      "package": {
+        "sha256": "83e217b18134af955f8e613ad1e52ac6e3a726fe2a80c4d8dcb842debd5a0de6",
+        "size": 1479,
+        "type": "file"
+      },
+      "source": {
+        "sha256": "83e217b18134af955f8e613ad1e52ac6e3a726fe2a80c4d8dcb842debd5a0de6",
+        "size": 1479,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "identical",
+        "confidence": "high",
+        "evidence": [
+          "SHA-256 hashes match."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f8",
+      "path": "src/browser.js",
+      "status": "identical",
+      "package": {
+        "sha256": "19920671f5902f64ad8ea11767fa50ea9d7a71ae0b7dff7ba5693c0075afc763",
+        "size": 6103,
+        "type": "file"
+      },
+      "source": {
+        "sha256": "19920671f5902f64ad8ea11767fa50ea9d7a71ae0b7dff7ba5693c0075afc763",
+        "size": 6103,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "identical",
+        "confidence": "high",
+        "evidence": [
+          "SHA-256 hashes match."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f9",
+      "path": "src/common.js",
+      "status": "identical",
+      "package": {
+        "sha256": "dbe83d2bb5837f3c4d7fe537b8004c585987270eceed5b06b8e078deb0ae214a",
+        "size": 6915,
+        "type": "file"
+      },
+      "source": {
+        "sha256": "dbe83d2bb5837f3c4d7fe537b8004c585987270eceed5b06b8e078deb0ae214a",
+        "size": 6915,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "identical",
+        "confidence": "high",
+        "evidence": [
+          "SHA-256 hashes match."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f10",
+      "path": "src/index.js",
+      "status": "identical",
+      "package": {
+        "sha256": "aa127ff1752b7d9c7415c5c7bb6994d9aa722b81bcbcab4bd48316b013d23bf3",
+        "size": 314,
+        "type": "file"
+      },
+      "source": {
+        "sha256": "aa127ff1752b7d9c7415c5c7bb6994d9aa722b81bcbcab4bd48316b013d23bf3",
+        "size": 314,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "identical",
+        "confidence": "high",
+        "evidence": [
+          "SHA-256 hashes match."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f11",
+      "path": "src/node.js",
+      "status": "identical",
+      "package": {
+        "sha256": "d7b26d7c92f8ea7794b77ce11f3c11cd18c9084df7c357e3c7025344fa28aac6",
+        "size": 4728,
+        "type": "file"
+      },
+      "source": {
+        "sha256": "d7b26d7c92f8ea7794b77ce11f3c11cd18c9084df7c357e3c7025344fa28aac6",
+        "size": 4728,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "identical",
+        "confidence": "high",
+        "evidence": [
+          "SHA-256 hashes match."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f12",
+      "path": "test.js",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "9f7e3cb2fbf4ae214110c7e83fee9f6d217b0e73a1fd930403a6d6353c2418a9",
+        "size": 3880,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f13",
+      "path": "test.node.js",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "fa301035843739291fe3aea2a2f14e74989b59d8de957da4a473228a487d8dd6",
+        "size": 1136,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    }
+  ],
+  "findings": [],
+  "manifest": {
+    "compared": true,
+    "reason": null,
+    "changes": [],
+    "installScripts": {
+      "package": {},
+      "source": {}
+    }
+  },
+  "ai": {
+    "status": "skipped",
+    "runs": [],
+    "classifications": [],
+    "investigations": []
+  },
+  "errors": []
+}

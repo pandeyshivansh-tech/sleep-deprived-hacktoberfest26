@@ -66,7 +66,7 @@ export default function App() {
         </section>
 
         <p className="note">
-          Package analysis is not available yet. This build only reports whether the server and the local models are ready.
+          Package analysis is not available in this dashboard yet. Run it from the command line with npm run analyze. This page only reports whether the server and the local models are ready.
         </p>
       </main>
     </div>

@@ -1,0 +1,472 @@
+{
+  "schemaVersion": "0.2.0",
+  "tool": {
+    "name": "audyssey",
+    "version": "0.1.0"
+  },
+  "generatedAt": "2026-10-31T21:21:57.861Z",
+  "input": {
+    "ecosystem": "npm",
+    "name": "mitt",
+    "version": "3.0.1",
+    "source": "registry"
+  },
+  "package": {
+    "name": "mitt",
+    "version": "3.0.1",
+    "tarballUrl": "https://registry.npmjs.org/mitt/-/mitt-3.0.1.tgz",
+    "integrity": {
+      "expected": "sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==",
+      "actual": "sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==",
+      "verified": true
+    },
+    "provenance": {
+      "attestationPresent": false,
+      "claimedRepository": null,
+      "claimedCommit": null
+    },
+    "fileCount": 10,
+    "totalBytes": 26444
+  },
+  "source": {
+    "resolved": true,
+    "repository": "https://github.com/developit/mitt",
+    "directory": null,
+    "ref": {
+      "type": "gitHead",
+      "value": "b240473b5707857ba2c6a8e6d707c28d1e39da49",
+      "commit": "b240473b5707857ba2c6a8e6d707c28d1e39da49"
+    },
+    "confidence": "exact-commit",
+    "notes": [
+      "Resolved the exact commit that npm recorded for this release (gitHead b240473b5707).",
+      "The source package.json name matches the published package.",
+      "The source package.json version matches the published version."
+    ]
+  },
+  "summary": {
+    "verdict": "inconclusive",
+    "riskScore": null,
+    "counts": {
+      "identical": 3,
+      "modified": 0,
+      "packageOnly": 7,
+      "sourceOnly": 9
+    },
+    "findingsBySeverity": {
+      "info": 0,
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "critical": 0
+    }
+  },
+  "files": [
+    {
+      "id": "f1",
+      "path": ".editorconfig",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "fb8101862d5fa12f273b79bc076f5ef81d13bc10771259a21966c854556f0d49",
+        "size": 302,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f2",
+      "path": ".eslintrc",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "826dd25e7c2ef027c8a970b2266de386a459bfbb766ea96856f6510d26077f1c",
+        "size": 1013,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f3",
+      "path": ".github/workflows/compressed-size.yml",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "d701cd6ddbbfd3d2b2e1dd0e4ccc966f635f8a1bf628d9683f67705fbf1325d4",
+        "size": 236,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f4",
+      "path": ".github/workflows/main.yml",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "76acc915042c58603ac0ccccf10b1243b374caf7ada817ce399c8efc6edc18f1",
+        "size": 425,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f5",
+      "path": ".gitignore",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "ce170d58a649f6289283725e36d3f174ed2eb4012656b5cc1a3b517510d84887",
+        "size": 103,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f6",
+      "path": "LICENSE",
+      "status": "identical",
+      "package": {
+        "sha256": "1cab22f196264195a4caec8ca5630170fdde76ee8f43346e47021d087332d3b0",
+        "size": 1069,
+        "type": "file"
+      },
+      "source": {
+        "sha256": "1cab22f196264195a4caec8ca5630170fdde76ee8f43346e47021d087332d3b0",
+        "size": 1069,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "identical",
+        "confidence": "high",
+        "evidence": [
+          "SHA-256 hashes match."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f7",
+      "path": "README.md",
+      "status": "identical",
+      "package": {
+        "sha256": "9b90f75f1ec4eba847115aa57b53cf46df90398e65e8ade7e3e51a3cc6c52664",
+        "size": 6274,
+        "type": "file"
+      },
+      "source": {
+        "sha256": "9b90f75f1ec4eba847115aa57b53cf46df90398e65e8ade7e3e51a3cc6c52664",
+        "size": 6274,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "identical",
+        "confidence": "high",
+        "evidence": [
+          "SHA-256 hashes match."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f8",
+      "path": "dist/mitt.js",
+      "status": "package-only",
+      "package": {
+        "sha256": "46769f6cae1b1a216842297ea034dba8e872a46b1122b83623105e63b1c9531b",
+        "size": 349,
+        "type": "file"
+      },
+      "source": null,
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the published package but not in the source snapshot.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f9",
+      "path": "dist/mitt.js.map",
+      "status": "package-only",
+      "package": {
+        "sha256": "cc183e77d24903b69a7b436200e001ff6c3e72e503aa5e66552402d61e77adff",
+        "size": 4730,
+        "type": "file"
+      },
+      "source": null,
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the published package but not in the source snapshot.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f10",
+      "path": "dist/mitt.mjs",
+      "status": "package-only",
+      "package": {
+        "sha256": "7a0c650bc6798bbe422677ef196d66417510a1c5b51f754c680f67cf1c256c50",
+        "size": 349,
+        "type": "file"
+      },
+      "source": null,
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the published package but not in the source snapshot.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f11",
+      "path": "dist/mitt.mjs.map",
+      "status": "package-only",
+      "package": {
+        "sha256": "448c659fd5c092ea2425ebfea79320ca88593a1e1b10e3e8338e8c08ceb3ba3d",
+        "size": 4731,
+        "type": "file"
+      },
+      "source": null,
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the published package but not in the source snapshot.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f12",
+      "path": "dist/mitt.umd.js",
+      "status": "package-only",
+      "package": {
+        "sha256": "1b48d419d5c66d6c39a8a2e2cb69e797989c8cd934f17122abc35d766650a82f",
+        "size": 520,
+        "type": "file"
+      },
+      "source": null,
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the published package but not in the source snapshot.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f13",
+      "path": "dist/mitt.umd.js.map",
+      "status": "package-only",
+      "package": {
+        "sha256": "366b8ca7c83fcc1c7b20fdb7828593317fbc3376859dc439a2c5fb3bdf4e4740",
+        "size": 4734,
+        "type": "file"
+      },
+      "source": null,
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the published package but not in the source snapshot.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f14",
+      "path": "index.d.ts",
+      "status": "package-only",
+      "package": {
+        "sha256": "980d84ab65a61d1979a22e5cd3322672e75fb148392b6903d08ccef59bbf530c",
+        "size": 1375,
+        "type": "file"
+      },
+      "source": null,
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the published package but not in the source snapshot.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f15",
+      "path": "package.json",
+      "status": "identical",
+      "package": {
+        "sha256": "99966ad2891dfe56614f039f5d03ada4bda6dba810952272ae57359abb527b91",
+        "size": 2313,
+        "type": "file"
+      },
+      "source": {
+        "sha256": "99966ad2891dfe56614f039f5d03ada4bda6dba810952272ae57359abb527b91",
+        "size": 2313,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "identical",
+        "confidence": "high",
+        "evidence": [
+          "SHA-256 hashes match."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f16",
+      "path": "src/index.ts",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "1536a2dd71d64785d811076beee6d970583ca555dd34ce839face641a200054b",
+        "size": 3723,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f17",
+      "path": "test/index_test.ts",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "cc25b9f1d50cf07d0ae99141e592bfe0d1ca7e8a48332bf1870b31ba8e62c43b",
+        "size": 5310,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f18",
+      "path": "test/test-types-compilation.ts",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "ea625d6ba9a8bd1b44ab24715bd84745db2a38efec69d3441c1774bd89c67bc8",
+        "size": 1691,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    },
+    {
+      "id": "f19",
+      "path": "tsconfig.json",
+      "status": "source-only",
+      "package": null,
+      "source": {
+        "sha256": "2569f69082a5b5e094466fdb4b5db9c8294b00e9c6d659b8a5571c77c695c9ec",
+        "size": 240,
+        "type": "file"
+      },
+      "explanation": {
+        "category": "unclassified",
+        "confidence": "low",
+        "evidence": [
+          "Present in the source snapshot but not in the published package.",
+          "No build-artifact analysis or security scan has judged this difference."
+        ]
+      },
+      "findingIds": []
+    }
+  ],
+  "findings": [],
+  "manifest": {
+    "compared": true,
+    "reason": null,
+    "changes": [],
+    "installScripts": {
+      "package": {},
+      "source": {}
+    }
+  },
+  "ai": {
+    "status": "skipped",
+    "runs": [],
+    "classifications": [],
+    "investigations": []
+  },
+  "errors": []
+}

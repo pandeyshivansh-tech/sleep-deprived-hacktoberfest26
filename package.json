@@ -17,6 +17,7 @@
     "dev:server": "npm run dev --workspace server",
     "dev:web": "npm run dev --workspace web",
     "test": "npm test --workspaces --if-present",
-    "build": "npm run build --workspace web"
+    "build": "npm run build --workspace web",
+    "analyze": "node server/bin/audyssey.js analyze"
   }
 }

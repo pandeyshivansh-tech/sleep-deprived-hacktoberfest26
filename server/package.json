@@ -6,6 +6,9 @@
   "license": "MIT",
   "type": "module",
   "main": "src/index.js",
+  "bin": {
+    "audyssey": "bin/audyssey.js"
+  },
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",

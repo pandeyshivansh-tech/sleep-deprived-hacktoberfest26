@@ -1,0 +1,21 @@
+Audyssey report for debug@4.4.1 (npm, registry download)
+
+Integrity:  verified against the registry checksum (sha512)
+Source:     https://github.com/debug-js/debug @ 33330fa8616b (exact commit recorded by npm)
+            - Resolved the exact commit that npm recorded for this release (gitHead 33330fa8616b).
+            - The source package.json name matches the published package.
+            - The source package.json version matches the published version.
+
+Files:      7 identical, 0 modified, 0 package-only, 6 source-only
+  source-only   .editorconfig
+  source-only   .gitignore
+  source-only   .travis.yml
+  source-only   karma.conf.js
+  source-only   test.js
+  source-only   test.node.js
+
+package.json: 0 field(s) differ between the published package and the source
+Install-time scripts in the published package: none
+
+Verdict:    inconclusive
+Security assessment: not performed. This build compares files and metadata only. It does not judge whether a difference is expected or suspicious.
