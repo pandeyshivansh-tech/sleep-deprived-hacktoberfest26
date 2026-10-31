@@ -34,6 +34,7 @@ function useHealth() {
   return { view: describeHealth(result), loading, refresh };
 }
 
+const ORIGINS = { upload: ['Fresh analysis', 'ok'], file: ['Opened from a file', 'neutral'], example: ['Bundled example', 'neutral'] };
 const TITLES = { workspace: 'Analysis workspace', overview: 'Overview', files: 'File comparison', findings: 'Security findings', ai: 'Local AI analysis' };
 
 export default function App() {
@@ -97,6 +98,7 @@ export default function App() {
             <div className="topbar-pkg">
               <span className="mono">{summary.name}@{summary.version}</span>
               <Badge tone={summary.verdict.tone}>{summary.verdict.label}</Badge>
+              <Badge tone={ORIGINS[loaded.origin][1]} variant="outline" title={loaded.label}>{ORIGINS[loaded.origin][0]}</Badge>
               <button type="button" className="link" onClick={() => { setLoaded(null); go('workspace'); }}>Close report</button>
             </div>
           )}
@@ -106,11 +108,11 @@ export default function App() {
             <>
               {loaded && (
                 <div className="current">
-                  <span>Open: <strong className="mono">{loaded.label}</strong></span>
+                  <span>Open: <strong className="mono">{loaded.label}</strong> <Badge tone={ORIGINS[loaded.origin][1]} variant="outline">{ORIGINS[loaded.origin][0]}</Badge></span>
                   <button type="button" className="btn" onClick={() => go('overview')}>Back to report</button>
                 </div>
               )}
-              <Workspace onOpen={(report, label) => { setLoaded({ report, label }); go('overview'); }} />
+              <Workspace aiReady={health.ai.ready} aiNote={health.ai.label} onOpen={(report, label, origin) => { setLoaded({ report, label, origin }); go('overview'); }} />
             </>
           )}
           {loaded && page === 'overview' && <Overview report={loaded.report} summary={summary} onNavigate={go} />}

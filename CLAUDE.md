@@ -15,7 +15,7 @@ Built by team Sleep Deprived for Hacktoberfest 2026 Hack Day Sonipat, Problem 04
 and judging rules are in the organizers' PDFs, not in this repo. The relevant
 points are summarized under **Hackathon rules** below.
 
-## Status: M0, M1, M2, M2b, M3 and M4 exist
+## Status: M0, M1, M2, M2b, M3, M4 and M5 exist
 
 Implemented, M0 (merged in PR #1):
 - npm workspaces `server/` (Express 5, ES modules) and `web/` (React 19 + Vite 8)
@@ -76,6 +76,15 @@ Implemented, M3 (report dashboard, `web/`):
   No `dangerouslySetInnerHTML`; package text is rendered as text; only https
   GitHub repository URLs become links. No new dependencies; transitions are CSS.
 
+Implemented, M5 (analysis API and upload; `server/src/api/`, `server/src/jobs/`):
+- `POST /api/analyze` takes the raw `.tgz` as the body, `GET /api/jobs/:id`,
+  `GET /api/jobs/:id/report` (see **API**). Jobs are in memory and ephemeral. The
+  existing pipeline (`analyzeNpmPackage` with `tarballBytes`, the bounded archive
+  reader, scanner, explainer, optional `addLocalAnalysis`) is reused unchanged.
+- The dashboard uploads a `.tgz`, shows real queued/running/completed/failed state
+  and pipeline steps, and opens the validated report in the existing views, marked
+  Fresh analysis / Opened from a file / Bundled example.
+
 Implemented, M4 (local models; see `docs/ai-analysis.md`):
 - `--ai` (CLI only, opt-in): `gemma4:e4b` classifies the files that differ, then
   `deepseek-r1:8b` explains the strongest findings, through the local Ollama only.
@@ -85,17 +94,15 @@ Implemented, M4 (local models; see `docs/ai-analysis.md`):
   to `ai.status: unavailable | partial | failed` with the deterministic report
   intact. Real inference was run and recorded in `examples/`.
 
-**Not implemented yet:** an analysis API route, starting analyses or uploading a tarball from the UI, release monitoring, PyPI, non-GitHub
+**Not implemented yet:** analysis by package name from the API or UI (only uploaded `.tgz` files), job persistence or cancellation, authentication, release monitoring, PyPI, non-GitHub
 sources, verification of npm provenance attestations (presence is reported, never
 verified). Never describe these as working, in code comments, the README, UI copy
-or PR descriptions. UI text must not pretend a feature works. The current page explicitly
-says analysis is not available yet. The scanner is heuristic: never describe a
+or PR descriptions. UI text must not pretend a feature works. The scanner is heuristic: never describe a
 low score or an empty findings list as "safe".
 
 Planned milestones (each one is its own PR):
 - M2b (done): the evidence-based build-artifact explainer above
-- M5: async job API, local `.tgz` upload (organizers evaluate with tampered
-  copies)
+- M5 (done): async job API and `.tgz` upload
 - M6: `examples/` with real outputs, a release-monitoring `watch` command,
   README
 
@@ -103,7 +110,10 @@ Planned milestones (each one is its own PR):
 
 ```
 server/src/index.js          entry: loadConfig() + listen
-server/src/app.js            createApp({ ollamaBaseUrl, fetchImpl }); routes
+server/src/app.js            createApp({ ollamaBaseUrl, fetchImpl, analysisFetchImpl, analyzeImpl, analysis }); routes
+server/src/api/analysis.js   POST /api/analyze, GET /api/jobs/:id[/report]: raw-body upload, limits, sanitizing
+server/src/jobs/manager.js   in-memory job store, queue, capacity, public error mapping, report validation
+web/src/lib/analysis-client.js  upload + polling client (injected fetch), tested without a server
 server/src/config.js         REQUIRED_MODELS, PORT/HOST/OLLAMA_BASE_URL, loopback check
 server/src/health.js         getHealth(): builds the /api/health payload
 server/src/ai/ollama.js      listInstalledModels() (GET /api/tags), chat() (the only inference call), stripThinking, extractJsonArray
@@ -167,10 +177,32 @@ must pass in CI on every PR.
 - Any other `/api/*` route returns 404 `{ "error": "Not found" }`. Unhandled
   errors return 500 `{ "error": "Internal server error" }`, and internal
   details are never sent to clients.
-- No endpoint may accept a filesystem path or expose local files. Analysis is
-  CLI-only for now: no route takes a package name, URL or path. The CLI may
+- `POST /api/analyze[?ai=1&filename=x.tgz]`: the request body is the `.tgz` itself
+  (`Content-Type: application/gzip`, `application/x-gzip`, `application/octet-stream`
+  or `application/x-tar`; other types get `415`, which also stops other websites
+  from starting jobs without a CORS preflight). Read under a 25 MB limit
+  (`MAX_UPLOAD_BYTES`; `413 too-large`), `Content-Encoding` is refused (`400`), empty
+  bodies `400 empty-upload`, bodies without the gzip magic `400 not-gzip`, and a full
+  server `429 busy` (checked before the body is read). Success is `202` with
+  `{ id, state, filename, ai, createdAt, updatedAt, queuePosition, progress[],
+  error, reportUrl }` and a `Location` header. The file name is display-only,
+  sanitized and never used as a path.
+- `GET /api/jobs/:id`: the same job object. `state` is `queued | running |
+  completed | failed`; `progress` holds the pipeline's real step messages (at most
+  40); `error` is `{ code, message }` for failures (authored pipeline messages only;
+  anything unexpected becomes a generic message and is logged server-side). Ids are
+  32 hex characters from `crypto.randomBytes`; anything else, or an id the server
+  does not hold, is `404 unknown-job`.
+- `GET /api/jobs/:id/report`: the validated report, or `409 not-ready` until the
+  job completed. A report that fails `validateReport` is discarded and the job
+  fails with `invalid-report`.
+- Jobs are in memory (`server/src/jobs/manager.js`): one running, two queued, 50
+  retained, one hour TTL; the uploaded bytes are released when the analysis ends.
+  Nothing is written to disk and no database or queue service is used.
+- No endpoint accepts a filesystem path, URL, repository or command. The CLI may
   read a `--tarball` path the user passes on their own machine; an HTTP API may
-  never do that.
+  never do that. `createApp({ fetchImpl })` is the Ollama fetch and
+  `analysisFetchImpl` the registry/GitHub fetch; tests replace both.
 
 ## Report contract
 

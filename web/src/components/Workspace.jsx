@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { acceptReport, MAX_REPORT_BYTES, parseReportText } from '../lib/report-load.js';
 import { BUNDLED_REPORTS } from '../lib/examples.js';
 import { describeVerdict } from '../lib/report-view.js';
+import UploadAnalysis from './UploadAnalysis.jsx';
 import { Badge, Icon, Notice, Panel } from './ui.jsx';
 
 const FAILURE_TITLES = {
@@ -14,7 +15,7 @@ const FAILURE_TITLES = {
   unreadable: 'Could not read the file',
 };
 
-export default function Workspace({ onOpen }) {
+export default function Workspace({ onOpen, aiReady, aiNote }) {
   const [state, setState] = useState({ phase: 'idle', failure: null, name: null });
   const [dragging, setDragging] = useState(false);
   const input = useRef(null);
@@ -36,7 +37,7 @@ export default function Workspace({ onOpen }) {
     const result = parseReportText(text);
     if (result.ok) {
       setState({ phase: 'idle', failure: null, name: null });
-      onOpen(result.report, file.name);
+      onOpen(result.report, file.name, 'file');
     } else {
       setState({ phase: 'failed', failure: result, name: file.name });
     }
@@ -44,14 +45,15 @@ export default function Workspace({ onOpen }) {
 
   function openBundled(entry) {
     const result = acceptReport(entry.report);
-    if (result.ok) onOpen(result.report, `${entry.title} (bundled example)`);
+    if (result.ok) onOpen(result.report, `${entry.title} (bundled example)`, 'example');
     else setState({ phase: 'failed', failure: result, name: entry.title });
   }
 
   const { failure } = state;
   return (
     <div className="stack">
-      <Panel title="Open an analysis report" id="open">
+      <UploadAnalysis aiReady={aiReady} aiNote={aiNote} onComplete={(report, label) => onOpen(report, label, 'upload')} />
+      <Panel title="Open an existing report" id="open">
         <p className="lede">
           Load a <code>report.json</code> produced by the Audyssey CLI. It is checked against the report contract in your browser
           before anything is shown, and it is never uploaded anywhere.
@@ -110,8 +112,8 @@ export default function Workspace({ onOpen }) {
           <summary>How do I produce a report?</summary>
           <pre className="code"><code>npm run analyze -- name@1.2.3 --out report.json</code></pre>
           <p className="muted">
-            Add <code>--ai</code> for local-model interpretation (needs Ollama). Starting analyses from this page is not
-            available yet: the dashboard only reads reports.
+            Add <code>--ai</code> for local-model interpretation (needs Ollama). To analyze a package from this page, use the upload
+            above.
           </p>
         </details>
       </Panel>
