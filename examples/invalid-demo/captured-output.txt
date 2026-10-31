@@ -1,0 +1,22 @@
+# Captured from a real run of ./examples/invalid-demo/run-invalid.sh on 2026-10-31 (audyssey 0.1.0, Node v24.11.1). Not hand-written.
+=== CLI: node server/bin/audyssey.js analyze --tarball examples/invalid-demo/not-a-gzip.tgz
+Error: The supplied tarball cannot be identified (Archive is not gzip-compressed). Pass the package name and version explicitly.
+exit code: 2
+
+=== API: POST /api/analyze  (not-a-gzip.tgz)
+{"code":"not-gzip","error":"The upload is not a gzip-compressed archive (.tgz). A file name or type is not accepted as proof."}
+HTTP 400
+
+=== CLI: node server/bin/audyssey.js analyze --tarball examples/invalid-demo/gzip-not-tar.tgz
+Error: The supplied tarball cannot be identified (Malformed number in tar field "checksum"). Pass the package name and version explicitly.
+exit code: 2
+
+=== API: POST /api/analyze  (gzip-not-tar.tgz)
+{"id":"<job id>","state":"queued","filename":"gzip-not-tar.tgz","ai":false,"createdAt":"<time>","updatedAt":"<time>","queuePosition":1,"progress":[{"at":"<time>","message":"Analysis started"}],"error":null,"reportUrl":null}
+HTTP 202
+=== API: GET /api/jobs/<job id>
+{"id":"<job id>","state":"failed","filename":"gzip-not-tar.tgz","ai":false,"createdAt":"<time>","updatedAt":"<time>","queuePosition":null,"progress":[{"at":"<time>","message":"Analysis started"}],"error":{"code":"unidentifiable-tarball","message":"The supplied tarball cannot be identified (Malformed number in tar field \"checksum\"). Pass the package name and version explicitly."},"reportUrl":null}
+=== API: GET /api/jobs/<job id>/report
+{"code":"not-ready","error":"The analysis is failed; there is no report to return.","state":"failed"}
+HTTP 409
+

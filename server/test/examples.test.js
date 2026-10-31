@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { run as runCli } from '../src/cli.js';
 import { readFile, readdir } from 'node:fs/promises';
 import { validateReport } from '../src/report/schema.js';
 
@@ -10,7 +11,12 @@ const examplesUrl = new URL('../../examples/', import.meta.url);
 
 async function exampleDirectories() {
   const entries = await readdir(examplesUrl, { withFileTypes: true });
-  return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+  const names = [];
+  for (const entry of entries.filter((e) => e.isDirectory())) {
+    // Examples with a report. (invalid-demo has none by design: it shows a rejection.)
+    if ((await readdir(new URL(`${entry.name}/`, examplesUrl))).includes('report.json')) names.push(entry.name);
+  }
+  return names.sort();
 }
 
 const read = (directory, file) => readFile(new URL(`${directory}/${file}`, examplesUrl));
@@ -136,4 +142,40 @@ test('the registry examples were verified against the registry checksum and reso
     assert.equal(report.source.confidence, 'exact-commit', directory);
     assert.match(report.source.ref.commit, /^[0-9a-f]{40}$/, directory);
   }
+});
+
+test('the clean upload example is the real registry tarball, small, and analyses as no-differences', async () => {
+  const report = JSON.parse(await read('clean-demo', 'report.json'));
+  const tarball = await read('clean-demo', 'debug-4.4.1.tgz');
+  assert.ok(tarball.length < 50 * 1024);
+  assert.equal(report.input.source, 'tarball');
+  assert.equal(report.package.integrity.verified, true, 'the bytes match the checksum npm publishes for debug@4.4.1');
+  assert.equal(report.package.integrity.actual, `sha512-${createHash('sha512').update(tarball).digest('base64')}`);
+  assert.equal(report.summary.verdict, 'no-differences');
+  assert.equal(report.summary.riskScore, 0);
+  assert.deepEqual(report.findings.filter((f) => f.severity !== 'info'), []);
+});
+
+test('the invalid-archive examples are tiny and inert, and are rejected with a clear error', async () => {
+  const gzipMagic = (bytes) => bytes[0] === 0x1f && bytes[1] === 0x8b;
+  const notGzip = await read('invalid-demo', 'not-a-gzip.tgz');
+  const gzipNotTar = await read('invalid-demo', 'gzip-not-tar.tgz');
+  assert.ok(notGzip.length < 1024 && gzipNotTar.length < 1024);
+  assert.equal(gzipMagic(notGzip), false);
+  assert.equal(gzipMagic(gzipNotTar), true);
+
+  for (const [file, reason] of [['not-a-gzip.tgz', /not gzip-compressed/], ['gzip-not-tar.tgz', /Malformed number in tar field/]]) {
+    const err = [];
+    const code = await runCli(['analyze', '--tarball', new URL(`invalid-demo/${file}`, examplesUrl).pathname], {
+      stdout: { write: () => {} },
+      stderr: { write: (text) => err.push(text) },
+      fetchImpl: async () => { throw new Error('the network must not be needed to reject an invalid archive'); },
+    });
+    assert.equal(code, 2, file);
+    assert.match(err.join(''), reason, file);
+  }
+  const captured = (await read('invalid-demo', 'captured-output.txt')).toString();
+  assert.match(captured, /HTTP 400/);
+  assert.match(captured, /not-gzip/);
+  assert.match(captured, /unidentifiable-tarball/);
 });

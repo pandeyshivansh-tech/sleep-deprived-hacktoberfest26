@@ -15,7 +15,7 @@ Built by team Sleep Deprived for Hacktoberfest 2026 Hack Day Sonipat, Problem 04
 and judging rules are in the organizers' PDFs, not in this repo. The relevant
 points are summarized under **Hackathon rules** below.
 
-## Status: M0, M1, M2, M2b, M3, M4 and M5 exist
+## Status: M0, M1, M2, M2b, M3, M4, M5 and M6 (docs) exist
 
 Implemented, M0 (merged in PR #1):
 - npm workspaces `server/` (Express 5, ES modules) and `web/` (React 19 + Vite 8)
@@ -76,6 +76,10 @@ Implemented, M3 (report dashboard, `web/`):
   No `dangerouslySetInnerHTML`; package text is rendered as text; only https
   GitHub repository URLs become links. No new dependencies; transitions are CSS.
 
+Implemented, M6 (release readiness, docs only): judge-facing README, `docs/DEMO.md`,
+and the three reproducible demo scenarios (clean, tampered, invalid) under `examples/`.
+No analysis behavior changed.
+
 Implemented, M5 (analysis API and upload; `server/src/api/`, `server/src/jobs/`):
 - `POST /api/analyze` takes the raw `.tgz` as the body, `GET /api/jobs/:id`,
   `GET /api/jobs/:id/report` (see **API**). Jobs are in memory and ephemeral. The
@@ -103,8 +107,7 @@ low score or an empty findings list as "safe".
 Planned milestones (each one is its own PR):
 - M2b (done): the evidence-based build-artifact explainer above
 - M5 (done): async job API and `.tgz` upload
-- M6: `examples/` with real outputs, a release-monitoring `watch` command,
-  README
+- Release-monitoring `watch` command (not started)
 
 ## Layout
 
@@ -143,7 +146,8 @@ docs/report-schema.md        report contract v0.3.0 (source of truth)
 docs/ai-analysis.md          what the two models do, guarantees, measured local behavior, failure modes
 docs/risk-model.md           scanner rules, weights and why, verdict table, measured results, limits
 docs/report.sample.json      hand-written, fictional sample; not real output
-examples/                    REAL tool output: debug@4.4.1, mitt@3.0.1, tampered-demo
+examples/                    REAL tool output: debug@4.4.1, mitt@3.0.1, clean-demo (upload input), tampered-demo, invalid-demo (rejections; captured-output.txt)
+docs/DEMO.md                 2-3 minute live demo script with fallbacks
 ```
 
 ## Commands
