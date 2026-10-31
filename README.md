@@ -24,7 +24,8 @@ This repository is being built milestone by milestone through pull requests.
 | Deterministic security scanner, capability differential, documented risk score and verdict | Done (M2) |
 | Build-artifact explainer (explaining why differences exist) | Implemented (M2b): source maps, `sourceMappingURL`, `types` entries, `files` lists; see [`docs/risk-model.md`](docs/risk-model.md#explaining-differences) |
 | Gemma and DeepSeek analysis through local Ollama (`--ai`) | Done (M4) |
-| Analysis dashboard, analysis API, local tarball upload in the UI | Planned (M3, M5) |
+| Report dashboard: open a `report.json` (validated against the contract) or a bundled example; overview, file explorer, findings, local-AI output | Done (M3) |
+| Analysis API, starting analyses and uploading a tarball from the UI | Planned (M5) |
 | Release monitoring | Planned (M6) |
 
 This README describes only what exists, and each milestone PR updates it.
@@ -90,7 +91,7 @@ verdict. See [`examples/`](examples) for real output.
 
 ## Planned
 
-- Release monitoring, an analysis API and an analysis dashboard.
+- Release monitoring, and an analysis API so the dashboard can start analyses itself.
 
 ## AI models
 
@@ -172,7 +173,7 @@ npm run analyze -- --tarball examples/tampered-demo/debug-4.4.1-tampered.tgz
 
 ### Run the server and dashboard
 
-The server and dashboard currently show only service and model status. Analysis
+The dashboard shows service and model status and **views reports**: open a `report.json` produced by the CLI (it is validated against the report contract in the browser and never uploaded) or one of the bundled real examples. It cannot start an analysis yet. Analysis
 is available from the command line, not yet from the API or UI.
 
 Start the API server on http://127.0.0.1:8787:
