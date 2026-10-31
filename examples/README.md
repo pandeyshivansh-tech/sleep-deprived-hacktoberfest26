@@ -8,6 +8,8 @@ Every `report.json` follows the [report contract](../docs/report-schema.md).
 |---|---|---|
 | [`debug@4.4.1`](debug@4.4.1) | npm registry | A package published straight from source: every published file matches the source, nothing was flagged, and the verdict is `no-differences` |
 | [`mitt@3.0.1`](mitt@3.0.1) | npm registry | A package with a build step: `dist/` exists only in the published package. The scanner finds nothing and every build file is explained from evidence (source maps whose embedded source matches `src/index.ts`, entry points, a declarations-only types file), so the verdict is `expected-differences` with a score of 0 |
+| [`clean-demo`](clean-demo) | local `.tgz` | **Example A, for the dashboard upload.** The real `debug@4.4.1` tarball. Verdict `no-differences`, score 0 |
+| [`invalid-demo`](invalid-demo) | two fake `.tgz` files | **Example C.** Not an archive / gzip but not tar: rejected with a clear error (no report exists by design); captured CLI and API output |
 | [`tampered-demo`](tampered-demo) | local `.tgz` | A deliberately modified copy of `debug@4.4.1`: checksum mismatch, an added install script that runs an added file. Two distinct strong rules make it `suspicious` (68/100); the three differing files have no evidence and are `unexplained` |
 
 ## What these examples show, and what they do not
