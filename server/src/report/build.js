@@ -3,7 +3,6 @@ import { decideVerdict, scoreFindings } from '../scan/risk.js';
 import { VERSION } from '../version.js';
 import { SCHEMA_VERSION, SEVERITIES, validateReport } from './schema.js';
 
-const NOT_JUDGED = 'No build-artifact analysis has judged this difference. The security scanner reports its findings separately.';
 const MAX_LISTED_FIELDS = 10;
 
 const side = (record) => (record ? { sha256: record.sha256, size: record.size, type: record.type } : null);
@@ -33,7 +32,9 @@ function manifestEvidence(manifest) {
   return evidence;
 }
 
-function buildFiles({ comparison, sourceResolved, manifest }) {
+const EXPLAINED = new Set(['generated-artifact', 'publish-normalization']);
+
+function buildFiles({ comparison, sourceResolved, manifest, explanations }) {
   return comparison.map((entry, index) => {
     let category = 'unclassified';
     let confidence = 'low';
@@ -44,8 +45,13 @@ function buildFiles({ comparison, sourceResolved, manifest }) {
       category = 'identical';
       confidence = 'high';
       evidence = [entry.package.type === 'file' ? 'SHA-256 hashes match.' : 'Link type and target match.'];
+    } else if (explanations.has(entry.path)) {
+      // The explainer looked for evidence: the category says whether it found any.
+      const explanation = explanations.get(entry.path);
+      ({ category, confidence } = explanation);
+      evidence = [describeDifference(entry), ...explanation.evidence];
     } else {
-      evidence = [describeDifference(entry), NOT_JUDGED];
+      evidence = [describeDifference(entry), 'No explanation was attempted for this difference.'];
     }
     if (entry.path === 'package.json') evidence.push(...manifestEvidence(manifest));
     if (entry.package?.linkEscapes) {
@@ -101,10 +107,11 @@ export function buildReport({
   comparison,
   manifest,
   scanResult = null,
+  explanations = new Map(),
   errors,
   now = () => new Date(),
 }) {
-  const files = buildFiles({ comparison, sourceResolved: source.resolved, manifest });
+  const files = buildFiles({ comparison, sourceResolved: source.resolved, manifest, explanations });
   const counts = { identical: 0, modified: 0, packageOnly: 0, sourceOnly: 0 };
   const countKey = { identical: 'identical', modified: 'modified', 'package-only': 'packageOnly', 'source-only': 'sourceOnly' };
   for (const file of files) counts[countKey[file.status]] += 1;
@@ -141,7 +148,9 @@ export function buildReport({
     }));
     for (const file of files) file.findingIds = findings.filter((finding) => finding.fileId === file.id).map((finding) => finding.id);
     const { riskScore, scoring } = scoreFindings(findings);
-    summary = { verdict: decideVerdict({ findings, riskScore, counts, sourceResolved: source.resolved }), riskScore, scoring };
+    // A difference counts as unexplained unless the explainer found evidence for it.
+    const unexplained = files.filter((file) => (file.status === 'modified' || file.status === 'package-only') && !EXPLAINED.has(file.explanation.category)).length;
+    summary = { verdict: decideVerdict({ findings, riskScore, counts, sourceResolved: source.resolved, unexplained }), riskScore, scoring };
   }
 
   const report = {

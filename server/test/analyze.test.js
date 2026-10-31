@@ -57,19 +57,21 @@ test('compares a published package with its exact-commit source and reports ever
   assert.match(files['package.json'].explanation.evidence.join(' '), /differs in 1 field\(s\): gitHead/);
 });
 
-test('scans the published files but does not explain or classify differences', async () => {
+test('scans the published files and, without evidence, leaves every difference unexplained', async () => {
   const { report } = await run(legitimate());
   assert.equal(report.scan.performed, true);
   assert.ok(Number.isInteger(report.summary.riskScore));
   assert.equal(report.summary.scoring.model, 'audyssey-risk-v1');
   assert.deepEqual(report.findings.filter((f) => f.severity !== 'info'), [], 'an ordinary built package has nothing to report');
-  assert.equal(report.summary.verdict, 'needs-review', 'differences exist and nothing can explain them yet');
+  assert.equal(report.summary.verdict, 'needs-review', 'differences exist and no evidence explains them');
   assert.deepEqual(report.ai, { status: 'skipped', runs: [], classifications: [], investigations: [] });
-  for (const file of report.files.filter((f) => f.status !== 'identical')) {
-    assert.equal(file.explanation.category, 'unclassified', file.path);
-    assert.equal(file.explanation.confidence, 'low');
-    assert.match(file.explanation.evidence.join(' '), /No build-artifact analysis has judged this difference/);
+  const files = byPath(report);
+  for (const path of ['dist/index.js', 'dist/index.js.map']) {
+    assert.equal(files[path].explanation.category, 'unexplained', path);
+    assert.match(files[path].explanation.evidence.join(' '), /No evidence ties this file to the repository|not a source map/);
   }
+  assert.equal(files['package.json'].explanation.category, 'publish-normalization');
+  assert.equal(files['src/index.ts'].explanation.category, 'unclassified', 'a source-only file is not judged without a "files" list');
 });
 
 test('a package that matches its source and has nothing to report has no differences', async () => {

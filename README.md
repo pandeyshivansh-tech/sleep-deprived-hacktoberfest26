@@ -22,7 +22,7 @@ This repository is being built milestone by milestone through pull requests.
 | Dashboard showing server and model status | Done (M0) |
 | npm retrieval, integrity check, source resolution, safe in-memory archive reading, SHA-256 file comparison, `package.json` comparison, command-line tool, real examples | Done (M1) |
 | Deterministic security scanner, capability differential, documented risk score and verdict | Done (M2) |
-| Build-artifact explainer (explaining why differences exist) | Planned (M2b), required by Problem 04 |
+| Build-artifact explainer (explaining why differences exist) | Implemented (M2b): source maps, `sourceMappingURL`, `types` entries, `files` lists; see [`docs/risk-model.md`](docs/risk-model.md#explaining-differences) |
 | Gemma and DeepSeek analysis through local Ollama (`--ai`) | Done (M4) |
 | Analysis dashboard, analysis API, local tarball upload in the UI | Planned (M3, M5) |
 | Release monitoring | Planned (M6) |
@@ -76,18 +76,20 @@ runs, so a low score is never a statement that a package is safe. On a corpus of
 24 popular packages it reported no high or critical finding
 ([details](docs/risk-model.md)).
 
-**Not done yet:** the deterministic build-artifact explainer. Audyssey does not
-yet *prove* why a difference exists from evidence, so every difference is
-`unclassified` and a package that differs from its source is `needs-review` at
-best, even when nothing in it looks risky. With `--ai`, Gemma gives an advisory
-opinion on each difference, but a model's opinion is not evidence and does not
-change the verdict. See [`examples/`](examples) for real output.
+**Explaining differences.** A difference is explained only from evidence: a
+source map whose embedded source is byte-identical to repository files, a
+generated file that references such a map and is fully described by it, a
+declarations-only `types` entry with matching source, additive publish metadata
+in `package.json`, or files left out by a literal `files` list. There is no list
+of file names. Everything else is `unexplained`, a forged map is never evidence,
+and explained files are still scanned: any finding rules out
+`expected-differences`. Limits: bundler/`tsconfig` configuration is not read, and
+a valid map does not prove a file equals real compiler output. With `--ai`,
+Gemma gives an advisory opinion, which is not evidence and does not change the
+verdict. See [`examples/`](examples) for real output.
 
 ## Planned
 
-- **Explain differences from evidence** (build configuration, entry points,
-  source maps) rather than a hard-coded allowlist. Problem 04 requires this, and
-  until it exists a clean built package cannot reach `expected-differences`.
 - Release monitoring, an analysis API and an analysis dashboard.
 
 ## AI models

@@ -4,7 +4,7 @@
     "name": "audyssey",
     "version": "0.1.0"
   },
-  "generatedAt": "2026-10-31T22:49:55.381Z",
+  "generatedAt": "2026-10-31T23:06:18.857Z",
   "input": {
     "ecosystem": "npm",
     "name": "mitt",
@@ -45,7 +45,7 @@
     ]
   },
   "summary": {
-    "verdict": "needs-review",
+    "verdict": "expected-differences",
     "riskScore": 0,
     "scoring": {
       "model": "audyssey-risk-v1",
@@ -79,11 +79,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only dist, index.d.ts; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -99,11 +99,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only dist, index.d.ts; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -119,11 +119,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only dist, index.d.ts; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -139,11 +139,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only dist, index.d.ts; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -159,11 +159,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only dist, index.d.ts; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -225,11 +225,14 @@
       },
       "source": null,
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "generated-artifact",
+        "confidence": "high",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "References source map dist/mitt.js.map (sourceMappingURL), which describes all 1 line(s) of this file.",
+          "Source map (version 3) listing 1 source(s).",
+          "1 embedded source(s) are byte-identical to repository files: src/index.ts.",
+          "Declared by package.json as: main, exports.require."
         ]
       },
       "findingIds": []
@@ -245,11 +248,12 @@
       },
       "source": null,
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "generated-artifact",
+        "confidence": "high",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "Source map (version 3) listing 1 source(s).",
+          "1 embedded source(s) are byte-identical to repository files: src/index.ts."
         ]
       },
       "findingIds": []
@@ -265,11 +269,14 @@
       },
       "source": null,
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "generated-artifact",
+        "confidence": "high",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "References source map dist/mitt.mjs.map (sourceMappingURL), which describes all 1 line(s) of this file.",
+          "Source map (version 3) listing 1 source(s).",
+          "1 embedded source(s) are byte-identical to repository files: src/index.ts.",
+          "Declared by package.json as: module, exports.module, exports.import."
         ]
       },
       "findingIds": []
@@ -285,11 +292,12 @@
       },
       "source": null,
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "generated-artifact",
+        "confidence": "high",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "Source map (version 3) listing 1 source(s).",
+          "1 embedded source(s) are byte-identical to repository files: src/index.ts."
         ]
       },
       "findingIds": []
@@ -305,11 +313,13 @@
       },
       "source": null,
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "generated-artifact",
+        "confidence": "high",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "References source map dist/mitt.umd.js.map (sourceMappingURL), which describes all 1 line(s) of this file.",
+          "Source map (version 3) listing 1 source(s).",
+          "1 embedded source(s) are byte-identical to repository files: src/index.ts."
         ]
       },
       "findingIds": []
@@ -325,11 +335,12 @@
       },
       "source": null,
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "generated-artifact",
+        "confidence": "high",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "Source map (version 3) listing 1 source(s).",
+          "1 embedded source(s) are byte-identical to repository files: src/index.ts."
         ]
       },
       "findingIds": []
@@ -345,11 +356,12 @@
       },
       "source": null,
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "generated-artifact",
+        "confidence": "medium",
         "evidence": [
           "Present in the published package but not in the source snapshot.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "Declared by package.json as typings and contains only declarations (nothing executable at the top level).",
+          "The repository has source with the same name: src/index.ts."
         ]
       },
       "findingIds": []
@@ -388,11 +400,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only dist, index.d.ts; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -408,11 +420,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only dist, index.d.ts; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -428,11 +440,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only dist, index.d.ts; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -448,11 +460,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only dist, index.d.ts; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -577,7 +589,7 @@
         "stage": "classification",
         "model": "gemma4:e4b",
         "digest": "eb2177adf7646d15faead94fdad6d3e170dc8015653418a3b7d5d52a6380be5b",
-        "durationMs": 13659,
+        "durationMs": 84635,
         "status": "completed"
       }
     ],
@@ -585,37 +597,37 @@
       {
         "fileId": "f8",
         "label": "expected-artifact",
-        "rationale": "This is a CommonJS build output, likely transpiled from source."
+        "rationale": "This is a compiled JavaScript file, likely minified, and includes a source map reference."
       },
       {
         "fileId": "f9",
         "label": "expected-artifact",
-        "rationale": "This is a source map corresponding to f8."
+        "rationale": "This is a source map file, which is a standard build artifact."
       },
       {
         "fileId": "f10",
         "label": "expected-artifact",
-        "rationale": "This is an ES Module build output, likely transpiled from source."
+        "rationale": "This is a compiled ES module JavaScript file, and includes a source map reference."
       },
       {
         "fileId": "f11",
         "label": "expected-artifact",
-        "rationale": "This is a source map corresponding to f10."
+        "rationale": "This is a source map file, which is a standard build artifact."
       },
       {
         "fileId": "f12",
         "label": "expected-artifact",
-        "rationale": "This is a UMD build output, which is standard for distribution."
+        "rationale": "This is a UMD bundle, which is a standard build artifact."
       },
       {
         "fileId": "f13",
         "label": "expected-artifact",
-        "rationale": "This is a source map corresponding to f12."
+        "rationale": "This is a source map file, which is a standard build artifact."
       },
       {
         "fileId": "f14",
         "label": "expected-artifact",
-        "rationale": "This is a TypeScript declaration file, which is expected build output."
+        "rationale": "This is a TypeScript declaration file (.d.ts), which is a standard build artifact."
       }
     ],
     "investigations": []

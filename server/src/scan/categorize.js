@@ -46,7 +46,11 @@ export function categorize(path, head) {
 // Which files an inventory keeps bytes for, by side. Source snapshots hold
 // images, fixtures and docs the scanner never reads, so they do not use up the
 // retention budget; the package keeps documentation too (for text aimed at AI).
-export const retainPackageFile = (path, head) => ['manifest', 'code', 'doc'].includes(categorize(path, head));
+// The explainer also reads source maps, which the scanner does not. Maps are JSON
+// objects, so any other file that begins with "{" is kept too: recognised by what
+// it contains, not by its name.
+const looksLikeJsonObject = (head) => Boolean(head) && head.toString('latin1').trimStart().startsWith('{');
+export const retainPackageFile = (path, head) => ['manifest', 'code', 'doc'].includes(categorize(path, head)) || looksLikeJsonObject(head);
 export const retainSourceFile = (path, head) => ['manifest', 'code'].includes(categorize(path, head));
 
 // Source directories whose code is build, test or tooling. Behavior found only

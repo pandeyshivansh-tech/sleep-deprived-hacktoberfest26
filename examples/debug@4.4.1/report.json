@@ -4,7 +4,7 @@
     "name": "audyssey",
     "version": "0.1.0"
   },
-  "generatedAt": "2026-10-31T22:24:34.798Z",
+  "generatedAt": "2026-10-31T23:06:18.238Z",
   "input": {
     "ecosystem": "npm",
     "name": "debug",
@@ -89,11 +89,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -109,11 +109,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -129,11 +129,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -195,11 +195,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -332,11 +332,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []
@@ -352,11 +352,11 @@
         "type": "file"
       },
       "explanation": {
-        "category": "unclassified",
-        "confidence": "low",
+        "category": "not-published",
+        "confidence": "high",
         "evidence": [
           "Present in the source snapshot but not in the published package.",
-          "No build-artifact analysis has judged this difference. The security scanner reports its findings separately."
+          "package.json \"files\" lists only src, LICENSE, README.md; this repository file is not covered, so npm does not publish it."
         ]
       },
       "findingIds": []

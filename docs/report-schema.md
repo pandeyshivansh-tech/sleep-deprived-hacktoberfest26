@@ -95,7 +95,7 @@ report that claims more than its evidence supports.
 | Verdict | Meaning | Enforced rules |
 |---|---|---|
 | `no-differences` | Every published file matches the source, and nothing was found | The source is resolved; no modified or package-only files; no findings of `low` or above. (Source-only files are not published, so they are not differences.) |
-| `expected-differences` | There are differences, all explained as normal build or publish output | The source is resolved; every modified or package-only file is `generated-artifact` or `publish-normalization`; no findings of `medium` or above. Only the build-artifact explainer can set those categories, so this verdict is unreachable without it. |
+| `expected-differences` | There are differences, all explained as normal build or publish output | The source is resolved; every modified or package-only file is `generated-artifact` or `publish-normalization`; no findings of `medium` or above. The deterministic build-artifact explainer sets those categories from evidence (see [`risk-model.md`](risk-model.md#explaining-differences)); the pipeline additionally requires no finding of `low` or above. |
 | `needs-review` | Something needs a human to look at it | none |
 | `suspicious` | Several independent rules found strong indicators | Findings of `high` or `critical` from **at least two distinct rules**. A single indicator, however severe, can never produce this verdict. |
 | `inconclusive` | No conclusion can be drawn | Not allowed together with findings of `medium` or above. Used when the source is unresolved, the package could not be read, or no scan was performed. A report with `scan.performed: false` can only be `inconclusive`. |
@@ -134,9 +134,11 @@ structure; the weights themselves belong to the producer's documented model.
 
 `explanation.category` is one of `identical`, `generated-artifact`,
 `publish-normalization`, `not-published`, `unexplained` or `unclassified`.
-`unclassified` means the difference is reported by hash only: no explainer has
-judged it, so it is neither expected nor suspicious. `unexplained` is a
-judgement that evidence was looked for and not found. `confidence` is `high`,
+`unclassified` means the difference is reported by hash only and was not judged
+(the source could not be resolved, or it is a source-only file that no `files`
+list covers): neither expected nor suspicious. `unexplained` is a judgement that
+the explainer looked for evidence and did not find it. The explainer's evidence
+lines are in `explanation.evidence`. `confidence` is `high`,
 `medium` or `low`.
 
 ### `manifest`

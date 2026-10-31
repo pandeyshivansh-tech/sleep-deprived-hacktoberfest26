@@ -7,6 +7,7 @@ import { validateSpec } from './ecosystems/npm/spec.js';
 import { ArchiveError, InputError } from './errors.js';
 import { DEFAULT_LIMITS } from './limits.js';
 import { addLocalAnalysis } from './ai/run.js';
+import { explainDifferences } from './explain/index.js';
 import { buildReport } from './report/build.js';
 import { retainPackageFile } from './scan/categorize.js';
 import { scanPackage } from './scan/index.js';
@@ -149,6 +150,17 @@ export async function analyzeNpmPackage({
 
   const input = { ecosystem: 'npm', name, version, source: tarballBytes ? 'tarball' : 'registry' };
 
+  // Evidence-based explanation of each difference (source maps, entry points...).
+  // It reads inventories only; it never runs, imports or builds anything, and it
+  // does not influence the scanner, which looks at every file regardless.
+  const explanations = explainDifferences({
+    comparison,
+    packageInventory,
+    sourceInventory: source.resolved ? source.inventory : null,
+    manifest,
+    publishedManifest: publishedManifest.manifest ?? null,
+  });
+
   // The scanner needs a readable package. It never executes or installs anything.
   let scanResult = null;
   if (packageInventory) {
@@ -177,6 +189,7 @@ export async function analyzeNpmPackage({
     comparison,
     manifest,
     scanResult,
+    explanations,
     errors,
     now,
   });
