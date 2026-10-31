@@ -18,8 +18,8 @@ field by field, and reports provenance and integrity. It does **not** yet
 explain whether a difference is a normal build artifact or suspicious, scan code
 for risky behavior, or call the AI models. Accordingly, every report has:
 
-- `summary.verdict: "inconclusive"` and `summary.riskScore: null` (no security
-  assessment was performed)
+- `scan.performed: false`, `summary.verdict: "inconclusive"` and
+  `summary.riskScore: null` (no security assessment was performed)
 - `explanation.category: "unclassified"` for each difference
 - `ai.status: "skipped"` (no model was used)
 

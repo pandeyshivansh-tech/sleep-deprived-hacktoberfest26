@@ -1,6 +1,6 @@
 {
   "$comment": "Hand-written illustrative sample of the Audyssey report contract (docs/report-schema.md). It was NOT produced by Audyssey, and the package, repository, hashes and model outputs are fictional.",
-  "schemaVersion": "0.2.0",
+  "schemaVersion": "0.3.0",
   "tool": { "name": "audyssey", "version": "0.1.0" },
   "generatedAt": "2026-11-01T00:00:00.000Z",
   "input": { "ecosystem": "npm", "name": "example-pkg", "version": "1.2.0", "source": "registry" },
@@ -31,7 +31,17 @@
   },
   "summary": {
     "verdict": "suspicious",
-    "riskScore": 82,
+    "riskScore": 68,
+    "scoring": {
+      "model": "illustrative-sample",
+      "cap": 100,
+      "rawTotal": 68.4,
+      "contributions": [
+        { "findingId": "F1", "ruleId": "install-script-added", "base": 30, "confidenceFactor": 1, "introducedFactor": 1, "repeatFactor": 1, "points": 30 },
+        { "findingId": "F2", "ruleId": "credential-network-combination", "base": 30, "confidenceFactor": 1, "introducedFactor": 1, "repeatFactor": 1, "points": 30 },
+        { "findingId": "F3", "ruleId": "obfuscated-code", "base": 12, "confidenceFactor": 0.7, "introducedFactor": 1, "repeatFactor": 1, "points": 8.4 }
+      ]
+    },
     "counts": { "identical": 1, "modified": 1, "packageOnly": 3, "sourceOnly": 1 },
     "findingsBySeverity": { "info": 0, "low": 0, "medium": 1, "high": 2, "critical": 0 }
   },
@@ -101,27 +111,29 @@
   "findings": [
     {
       "id": "F1",
-      "ruleId": "lifecycle-script-added",
+      "ruleId": "install-script-added",
       "severity": "high",
       "confidence": "high",
+      "scope": "file",
       "title": "Install-time script added in the published package",
       "description": "The published package.json defines a postinstall script that the source package.json does not.",
       "fileId": "f2",
       "introducedInPackage": true,
-      "evidence": [{ "path": "package.json", "line": 9, "snippet": "\"postinstall\": \"node lib/telemetry.min.js\"" }]
+      "evidence": [{ "path": "package.json", "line": 9, "column": 5, "indicator": "install-script", "snippet": "\"postinstall\": \"node lib/telemetry.min.js\"" }]
     },
     {
       "id": "F2",
       "ruleId": "credential-network-combination",
       "severity": "high",
-      "confidence": "medium",
+      "confidence": "high",
+      "scope": "file",
       "title": "Reads sensitive environment variables and makes an outbound request",
       "description": "The same file reads NPM_TOKEN and sends an HTTPS request to a hard-coded host. This is an attempt to transmit data, not proof of successful exfiltration.",
       "fileId": "f5",
       "introducedInPackage": true,
       "evidence": [
-        { "path": "lib/telemetry.min.js", "line": 1, "snippet": "process.env.NPM_TOKEN" },
-        { "path": "lib/telemetry.min.js", "line": 1, "snippet": "https.request({hostname:\"collector.example.invalid\"" }
+        { "path": "lib/telemetry.min.js", "line": 1, "column": 214, "indicator": "env.secret", "snippet": "process.env.NPM_TOKEN" },
+        { "path": "lib/telemetry.min.js", "line": 1, "column": 301, "indicator": "net.https", "snippet": "https.request({hostname:\"collector.example.invalid\"" }
       ]
     },
     {
@@ -129,11 +141,12 @@
       "ruleId": "obfuscated-code",
       "severity": "medium",
       "confidence": "medium",
+      "scope": "file",
       "title": "Obfuscated identifiers and encoded strings",
       "description": "Many _0x-prefixed identifiers and a long hex-encoded string literal.",
       "fileId": "f5",
       "introducedInPackage": true,
-      "evidence": [{ "path": "lib/telemetry.min.js", "line": 1, "snippet": "var _0x3f1a=['\\x68\\x74\\x74\\x70\\x73'" }]
+      "evidence": [{ "path": "lib/telemetry.min.js", "line": 1, "column": 1, "indicator": "obfuscation.hex-identifiers", "snippet": "var _0x3f1a=['\\x68\\x74\\x74\\x70\\x73'" }]
     }
   ],
   "manifest": {
@@ -143,6 +156,20 @@
       { "field": "scripts.postinstall", "change": "added", "packageValue": "node lib/telemetry.min.js", "sourceValue": null }
     ],
     "installScripts": { "package": { "postinstall": "node lib/telemetry.min.js" }, "source": {} }
+  },
+  "scan": {
+    "performed": true,
+    "rulesVersion": "sample-1",
+    "rules": [
+      { "id": "install-script-added", "version": 1 },
+      { "id": "credential-network-combination", "version": 1 },
+      { "id": "obfuscated-code", "version": 1 }
+    ],
+    "filesScanned": 3,
+    "filesNotApplicable": 2,
+    "filesSkipped": [],
+    "filesSkippedCount": 0,
+    "capabilityDifferential": { "available": true, "basis": "Behavior in the package was compared with the 2 scannable files of the resolved source snapshot." }
   },
   "ai": {
     "status": "completed",

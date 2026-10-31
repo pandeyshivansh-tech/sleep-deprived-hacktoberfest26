@@ -32,9 +32,10 @@ Implemented, M1 (deterministic npm analysis; CLI only):
   `repository.directory` supported
 - Bounded in-memory tar.gz reading, SHA-256 inventory, file diff
   (identical / modified / package-only / source-only), `package.json` diff
-- Report contract v0.2.0 output, real `examples/`
-- Every report is `verdict: "inconclusive"`, `riskScore: null`,
-  differences `unclassified`, `ai.status: "skipped"`: nothing judges them yet
+- Report contract v0.3.0 output, real `examples/`
+- Every report is `scan.performed: false`, `verdict: "inconclusive"`,
+  `riskScore: null`, differences `unclassified`, `ai.status: "skipped"`: no
+  scanner exists yet, and the report says so explicitly
 
 **Not implemented yet:** the build-artifact explainer, security scanning, risk
 scores, any model inference, an analysis API route, any analysis UI, release
@@ -79,7 +80,7 @@ server/test-support/         test helpers: fake-fetch, tar-builder (hostile arch
 web/src/App.jsx              status page (fetches /api/health)
 web/src/lib/health.js        describeHealth(): pure view-model, unit tested
 web/test/*.test.js           node:test suites for web/src/lib
-docs/report-schema.md        report contract v0.2.0 (source of truth)
+docs/report-schema.md        report contract v0.3.0 (source of truth)
 docs/report.sample.json      hand-written, fictional sample; not real output
 examples/                    REAL tool output: debug@4.4.1, mitt@3.0.1, tampered-demo
 ```
@@ -125,10 +126,18 @@ must pass in CI on every PR.
 `server/src/report/schema.js`, and `validateReport(report)` returns a list of
 problems (an empty list means the report is valid). Changing the contract means
 updating the doc, `schema.js`, `report.sample.json` and the tests together, in
-their own PR (as was done for v0.2.0). The key invariants, which
+their own PR (as was done for v0.2.0 and v0.3.0). The key invariants, which
 `validateReport` enforces:
-- `summary.riskScore` is `null` only with the `inconclusive` verdict. Never
-  invent a score.
+- `summary.riskScore` is `null` exactly when `scan.performed` is `false`, and
+  then the verdict is `inconclusive` and there are no findings. Never invent a
+  score; a non-null score must be reproducible from `summary.scoring`.
+- `suspicious` needs high or critical findings from at least two distinct
+  rules. `no-differences` and `expected-differences` need a resolved source;
+  `expected-differences` also needs every difference explained. `inconclusive`
+  never carries a medium-or-higher finding.
+- Files that were not scanned are listed in `scan.filesSkipped`; "no findings"
+  is never "safe". Package-scope findings (such as `integrity-mismatch`) have
+  `fileId: null`.
 - `files[].status` is identical, modified, package-only or source-only, and
   each status matches which side has a hash and whether the hashes agree.
 - `summary.counts` and `summary.findingsBySeverity` match the arrays.
