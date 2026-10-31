@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.vite/
+coverage/
+
+# Secrets and local configuration
+.env
+.env.*
+
+# Logs and OS files
+*.log
+npm-debug.log*
+.DS_Store

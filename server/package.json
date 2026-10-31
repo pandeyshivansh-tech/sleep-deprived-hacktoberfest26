@@ -1,0 +1,17 @@
+{
+  "name": "@audyssey/server",
+  "version": "0.1.0",
+  "description": "Audyssey API server and analysis core.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
+  }
+}
