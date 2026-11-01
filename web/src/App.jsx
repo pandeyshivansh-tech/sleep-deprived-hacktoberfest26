@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { describeHealth } from './lib/health.js';
 import { buildFileRows, summarizeReport } from './lib/report-view.js';
 import AiPanel from './components/AiPanel.jsx';
 import FileExplorer from './components/FileExplorer.jsx';
+import DotField from './components/DotField.jsx';
 import Findings from './components/Findings.jsx';
+import Landing from './components/Landing.jsx';
 import Overview from './components/Overview.jsx';
 import SystemStatus from './components/SystemStatus.jsx';
 import Workspace from './components/Workspace.jsx';
@@ -35,12 +38,12 @@ function useHealth() {
 }
 
 const ORIGINS = { upload: ['Fresh analysis', 'ok'], file: ['Opened from a file', 'neutral'], example: ['Bundled example', 'neutral'] };
-const TITLES = { workspace: 'Analysis workspace', overview: 'Overview', files: 'File comparison', findings: 'Security findings', ai: 'Local AI analysis' };
+const TITLES = { home: 'Home', workspace: 'Analysis workspace', overview: 'Overview', files: 'File comparison', findings: 'Security findings', ai: 'Local AI analysis' };
 
 export default function App() {
   const { view: health, loading, refresh } = useHealth();
   const [loaded, setLoaded] = useState(null); // { report, label }
-  const [page, setPage] = useState('workspace');
+  const [page, setPage] = useState('home');
   const [jump, setJump] = useState(null);
 
   const summary = useMemo(() => (loaded ? summarizeReport(loaded.report) : null), [loaded]);
@@ -53,6 +56,7 @@ export default function App() {
   }, []);
 
   const nav = [
+    ['home', 'Home', 'logo', null],
     ['workspace', 'Workspace', 'open', null],
     ...(loaded
       ? [
@@ -65,11 +69,13 @@ export default function App() {
   ];
 
   return (
+    <MotionConfig reducedMotion="user">
+    <DotField />
     <div className="app">
       <a className="skip" href="#main">Skip to content</a>
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark"><Icon name="logo" size={18} /></span>
+          <img className="brand-logo" src="/audyssey-logo.svg" width="40" height="40" alt="" />
           <div>
             <p className="brand-name">Audyssey</p>
             <p className="brand-tag">Know what you're actually installing.</p>
@@ -80,6 +86,7 @@ export default function App() {
             {nav.map(([id, label, icon, count]) => (
               <li key={id}>
                 <button type="button" className="nav-item" aria-current={page === id ? 'page' : undefined} onClick={() => go(id)}>
+                  {page === id && <motion.span layoutId="nav-pill" className="nav-pill" transition={{ type: 'spring', stiffness: 520, damping: 40 }} />}
                   <Icon name={icon} />
                   <span>{label}</span>
                   {count !== null && <span className="nav-count mono">{count}</span>}
@@ -93,7 +100,7 @@ export default function App() {
 
       <div className="content">
         <header className="topbar">
-          <h1 className="page-title">{TITLES[page]}</h1>
+          <h1 className="page-title"><span className="crumb-root">Audyssey</span>{page !== 'home' && <><span className="crumb-sep" aria-hidden="true">/</span><span>{TITLES[page]}</span></>}</h1>
           {loaded && page !== 'workspace' && (
             <div className="topbar-pkg">
               <span className="mono">{summary.name}@{summary.version}</span>
@@ -104,6 +111,9 @@ export default function App() {
           )}
         </header>
         <main id="main" className="main" tabIndex={-1}>
+          <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={page} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}>
+          {page === 'home' && <Landing onStart={() => go('workspace')} />}
           {page === 'workspace' && (
             <>
               {loaded && (
@@ -123,8 +133,11 @@ export default function App() {
           {loaded && page === 'ai' && (
             <AiPanel report={loaded.report} onOpenFile={(fileId) => go('files', { fileId })} onOpenFinding={(findingId) => go('findings', { findingId })} />
           )}
+          </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>
+    </MotionConfig>
   );
 }

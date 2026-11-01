@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
 import { MAX_UPLOAD_BYTES, checkUploadFile, formatMegabytes, runAnalysis } from '../lib/analysis-client.js';
 import { formatBytes } from '../lib/report-view.js';
 import { Badge, Icon, Panel } from './ui.jsx';
@@ -100,7 +101,7 @@ export default function UploadAnalysis({ aiReady, aiNote, onComplete }) {
           {job?.progress.length > 0 && (
             <ol className="steps">
               {job.progress.map((step, index) => (
-                <li key={`${step.at}-${index}`} className={index === job.progress.length - 1 && job.state === 'running' ? 'is-current' : undefined}>{step.message}</li>
+                <motion.li layout initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }} key={`${step.at}-${index}`} className={index === job.progress.length - 1 && job.state === 'running' ? 'is-current' : undefined}>{step.message}</motion.li>
               ))}
             </ol>
           )}

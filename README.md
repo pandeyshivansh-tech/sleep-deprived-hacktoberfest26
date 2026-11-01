@@ -10,26 +10,33 @@ Shivansh Pandey, Aman Mishra) for Hacktoberfest 2026 Hack Day Sonipat,
 
 ## Quick start (about 2 minutes)
 
-Needs Node.js 22.12+ and internet access (the source is looked up on GitHub). Ollama
-is optional.
+Needs **Node.js 22.12+** and npm, and internet access (the source is looked up on
+GitHub). Ollama is optional (only for the AI option).
 
 ```bash
+git clone https://github.com/pandeyshivansh-tech/sleep-deprived-hacktoberfest26.git
+cd sleep-deprived-hacktoberfest26
 npm ci
+npm run dev
 ```
 
-```bash
-npm run dev:server
-```
+`npm run dev` starts **both** the API (http://127.0.0.1:8787) and the dashboard. Open the
+dashboard URL that Vite prints, normally **http://127.0.0.1:5173**. Press Ctrl-C once to
+stop both. (Two terminals work too: `npm run dev:server` and `npm run dev:web`.)
 
-In a second terminal:
-
-```bash
-npm run dev:web
-```
-
-Open **http://127.0.0.1:5173**, drop `examples/clean-demo/debug-4.4.1.tgz` (clean) or
+Then, in the dashboard, go to **Workspace**, drop
+`examples/clean-demo/debug-4.4.1.tgz` (clean) or
 `examples/tampered-demo/debug-4.4.1-tampered.tgz` (tampered) onto **Analyze a package**,
 and click **Analyze**. A guided 2–3 minute walkthrough is in [`docs/DEMO.md`](docs/DEMO.md).
+
+**If something doesn't start**
+- `npm run dev` says port in use: another copy is running. Stop it, or set `PORT=8788`
+  for the API (then the dashboard proxy, which points at 8787, will not reach it; use the
+  default port for the dashboard).
+- The page loads but "Cannot reach the Audyssey server": the API is not running.
+- Analysis fails with a network error: the source lookup needs internet access.
+- There is no production build to serve: `npm run build` only checks that the dashboard
+  compiles. Run the dev commands above to use the app.
 
 ## The problem
 
@@ -103,6 +110,12 @@ npm ci
 ## Run the backend and frontend
 
 ```bash
+npm run dev           # both at once (see Quick start)
+```
+
+Or separately:
+
+```bash
 npm run dev:server    # API on http://127.0.0.1:8787 (restarts on change)
 ```
 
@@ -121,7 +134,7 @@ curl http://127.0.0.1:8787/api/health
 | `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | Must be loopback; remote hosts are rejected. |
 
 No API keys or secrets are needed. `npm start` runs only the API (no static dashboard);
-the dashboard is run with `npm run dev:web`.
+the dashboard is run with `npm run dev:web` (or `npm run dev` for both).
 
 ## Run a CLI analysis
 
