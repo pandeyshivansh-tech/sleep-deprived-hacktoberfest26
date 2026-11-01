@@ -166,6 +166,7 @@ Requires Node.js >= 22.12. CI uses Node 24 (`.nvmrc`).
 | Frontend build | `npm run build` |
 | Analyze a package | `npm run analyze -- name@1.2.3` (needs network; `--json`, `--out <file>`, `--tarball <file>`, `--ai`) |
 | Scanner acceptance run | `node server/scripts/scan-corpus.mjs [name@x.y.z ...]` (needs network; run it after any rule or weight change) |
+| Both (API + dashboard) | `npm run dev` (`scripts/dev.mjs`; Ctrl-C stops both) |
 | API server | `npm run dev:server` serves `http://127.0.0.1:8787` with `--watch` (`npm start` runs it without) |
 | Dashboard | `npm run dev:web` serves `http://127.0.0.1:5173` and proxies `/api` to 8787 |
 

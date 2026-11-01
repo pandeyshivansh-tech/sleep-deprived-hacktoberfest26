@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { AI_LABEL_TEXT, CATEGORY_LABELS, CATEGORY_ORDER, DEFAULT_FILTERS, STATUS_LABELS, STATUS_ORDER, countBy, filterFiles, formatBytes, modelFor, shortHash } from '../lib/report-view.js';
 import { Badge, Icon } from './ui.jsx';
 
@@ -148,7 +149,13 @@ export default function FileExplorer({ report, rows, jump, onOpenFinding }) {
                   </span>
                   <span className="file-meta mono muted">{formatBytes((row.package ?? row.source)?.size)} · {shortHash((row.package ?? row.source)?.sha256, 8)}</span>
                 </button>
-                {expanded && <FileDetail row={row} report={report} onOpenFinding={onOpenFinding} />}
+                <AnimatePresence initial={false}>
+                  {expanded && (
+                    <motion.div key="detail" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }} style={{ overflow: 'hidden' }}>
+                      <FileDetail row={row} report={report} onOpenFinding={onOpenFinding} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </li>
             );
           })}

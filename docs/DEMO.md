@@ -14,11 +14,7 @@ npm ci
 ```
 
 ```bash
-npm run dev:server
-```
-
-```bash
-npm run dev:web
+npm run dev
 ```
 
 1. Open http://127.0.0.1:5173. The **System** panel (bottom left) should show the API
